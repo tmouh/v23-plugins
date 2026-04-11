@@ -1,0 +1,24 @@
+{
+  "name": "v23-plugins",
+  "owner": {
+    "name": "Vanadium Group",
+    "email": "tmouhlas@v23group.com"
+  },
+  "metadata": {
+    "description": "Vanadium Group (V23) tools \u2014 CRE comp search, LinkedIn research, database utilities, and internal workflows.",
+    "version": "2.2.0"
+  },
+  "plugins": [
+    {
+      "name": "v23",
+      "description": "Vanadium Group (V23) tools \u2014 CRE comp search, LinkedIn research, database utilities, and internal workflows.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/comp-search",
+        "./skills/linkedin-research",
+        "./skills/placement-engine"
+      ]
+    }
+  ]
+}
