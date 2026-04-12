@@ -13,6 +13,7 @@
       "name": "v23",
       "description": "Vanadium Group (V23) tools \u2014 CRE comp search, LinkedIn research, database utilities, and internal workflows.",
       "source": "./",
+      "version": "3.0.0",
       "strict": true,
       "skills": [
         "./skills/comp-search",

@@ -2,7 +2,7 @@
 name: placement-engine
 description: "Generate ranked investor placement lists for commercial real estate capital raises. Use this skill when the user wants to: build a placement list, find investors for a deal, run a placement, generate investor rankings, bootstrap the placement database, import placement files, update placement data, or anything related to V23 capital placement and investor matching. Trigger phrases: 'placement engine', 'placement list', 'investor list', 'who should we approach', 'run placement', 'bootstrap placement', 'import placement', 'update placement', 'find investors for', 'investor matching', 'placement database'."
 metadata:
-  version: "2.0.0"
+  version: "3.0.0"
   author: "Vanadium Group"
 ---
 
