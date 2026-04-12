@@ -52,33 +52,25 @@ def format_a_xlsx(tmp_dir):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Detail"
-
-    # Deal header in row 1
     ws["A1"] = "Deal: Test Deal Alpha  01-Jan-26"
-
-    # Column headers in row 3
     headers = [
-        "Row #", "Status", "Cov.", "Capital Group", "Contact", "Email",
-        "Contact - Notes", "New Contact", "New - Role", "New - Email",
+        "Row #", "Status", "Cov.", "Capital Group",
         "Date - Last", "Placement Comments", "Old Comments",
     ]
     for col, h in enumerate(headers, 1):
         ws.cell(row=3, column=col, value=h)
-
-    # Data rows starting at row 4
     data = [
-        [1, "Pass", "HC", "Acme Capital", "John Smith", "john@acme.com",
-         "", "", "", "", "2025-12-01", "Not interested in this market",
+        [1, "Pass", "HC", "Acme Capital",
+         "2025-12-01", "Not interested in this market",
          "Previous pass on similar deal"],
-        [2, "Reviewing", "MS", "Beta Partners", "Jane Doe", "jane@beta.com",
-         "", "", "", "", "2026-01-15", "Reviewing terms", ""],
-        [3, "Sent", "SM", "Gamma Group", "Bob Wilson", "bob@gamma.com",
-         "", "Alice Brown", "VP", "alice@gamma.com", "", "", ""],
+        [2, "Reviewing", "MS", "Beta Partners",
+         "2026-01-15", "Reviewing terms", ""],
+        [3, "Sent", "SM", "Gamma Group",
+         "", "", ""],
     ]
     for row_idx, row_data in enumerate(data, 4):
         for col_idx, val in enumerate(row_data, 1):
             ws.cell(row=row_idx, column=col_idx, value=val)
-
     wb.save(path)
     return path
 
@@ -90,31 +82,27 @@ def format_b_xlsx(tmp_dir):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Detail"
-
     ws["A1"] = "Deal: Test Deal Beta  15-Feb-26"
-
     headers = [
-        "Status", "Coverage", "Capital Provider", "Contact Person",
-        "Contact Email", "Contact Numbers", "Date Sent",
+        "Status", "Coverage", "Capital Provider",
+        "Date Sent",
         "Placement Comments", "Previous / Other Commentary",
     ]
     for col, h in enumerate(headers, 1):
         ws.cell(row=3, column=col, value=h)
-
     data = [
-        ["1.Actively Reviewing", "HC", "Delta Fund", "Tom Lee",
-         "tom@delta.com", "555-0001", "2026-01-20",
+        ["1.Actively Reviewing", "HC", "Delta Fund",
+         "2026-01-20",
          "Very interested", "Met at conference"],
-        ["5.Pass", "MS", "Epsilon LLC", "Sara Chen",
-         "sara@epsilon.com", "555-0002", "2026-01-10",
+        ["5.Pass", "MS", "Epsilon LLC",
+         "2026-01-10",
          "Too small", ""],
-        ["2.Reviewing", "SM", "Zeta Investments", "Mike Park",
-         "mike@zeta.com", "555-0003", "2026-01-25",
+        ["2.Reviewing", "SM", "Zeta Investments",
+         "2026-01-25",
          "Under review by IC", "Previous interest"],
     ]
     for row_idx, row_data in enumerate(data, 4):
         for col_idx, val in enumerate(row_data, 1):
             ws.cell(row=row_idx, column=col_idx, value=val)
-
     wb.save(path)
     return path

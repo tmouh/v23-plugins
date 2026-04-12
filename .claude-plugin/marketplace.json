@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Vanadium Group (V23) tools \u2014 CRE comp search, LinkedIn research, database utilities, and internal workflows.",
-    "version": "2.2.0"
+    "version": "3.0.0"
   },
   "plugins": [
     {

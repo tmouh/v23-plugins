@@ -5,6 +5,7 @@ for a commercial real estate placement engine, plus a CLI.
 """
 
 import argparse
+import datetime
 import json
 import os
 import sqlite3
@@ -37,13 +38,7 @@ def create_database(db_path: str) -> None:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 canonical_name TEXT NOT NULL UNIQUE,
                 aliases TEXT DEFAULT '[]',
-                coverage_owner TEXT,
-                contact_name TEXT,
-                email TEXT,
-                phone TEXT,
-                new_contact TEXT,
-                new_contact_role TEXT,
-                new_contact_email TEXT
+                coverage_owner TEXT
             );
 
             CREATE TABLE IF NOT EXISTS deals (
@@ -70,6 +65,7 @@ def create_database(db_path: str) -> None:
                 coverage_code TEXT,
                 raw_comments TEXT,
                 old_comments TEXT,
+                pass_reason TEXT,
                 date_last_contact TEXT,
                 date_om_sent TEXT,
                 FOREIGN KEY (investor_id) REFERENCES investors(id),
@@ -83,6 +79,15 @@ def create_database(db_path: str) -> None:
                 ON interactions(deal_id);
             CREATE INDEX IF NOT EXISTS idx_interaction_investor_deal
                 ON interactions(investor_id, deal_id);
+
+            CREATE TABLE IF NOT EXISTS source_files (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                file_path TEXT NOT NULL UNIQUE,
+                deal_id INTEGER,
+                last_imported TEXT,
+                file_modified TEXT,
+                FOREIGN KEY (deal_id) REFERENCES deals(id)
+            );
         """)
     finally:
         conn.close()
@@ -129,12 +134,6 @@ def insert_investor(
     canonical_name: str,
     aliases: list = None,
     coverage_owner: str = None,
-    contact_name: str = None,
-    email: str = None,
-    phone: str = None,
-    new_contact: str = None,
-    new_contact_role: str = None,
-    new_contact_email: str = None,
 ) -> int:
     """Insert an investor and return its id. canonical_name must be unique.
     aliases is stored as a JSON array."""
@@ -145,11 +144,9 @@ def insert_investor(
     try:
         cur = conn.execute(
             """INSERT INTO investors
-               (canonical_name, aliases, coverage_owner, contact_name,
-                email, phone, new_contact, new_contact_role, new_contact_email)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (canonical_name, aliases_json, coverage_owner, contact_name,
-             email, phone, new_contact, new_contact_role, new_contact_email),
+               (canonical_name, aliases, coverage_owner)
+               VALUES (?, ?, ?)""",
+            (canonical_name, aliases_json, coverage_owner),
         )
         conn.commit()
         return cur.lastrowid
@@ -195,6 +192,7 @@ def insert_interaction(
     coverage_code: str = None,
     raw_comments: str = None,
     old_comments: str = None,
+    pass_reason: str = None,
     date_last_contact: str = None,
     date_om_sent: str = None,
 ) -> int:
@@ -204,10 +202,12 @@ def insert_interaction(
         cur = conn.execute(
             """INSERT INTO interactions
                (investor_id, deal_id, status, coverage_code,
-                raw_comments, old_comments, date_last_contact, date_om_sent)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                raw_comments, old_comments, pass_reason,
+                date_last_contact, date_om_sent)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (investor_id, deal_id, status, coverage_code,
-             raw_comments, old_comments, date_last_contact, date_om_sent),
+             raw_comments, old_comments, pass_reason,
+             date_last_contact, date_om_sent),
         )
         conn.commit()
         return cur.lastrowid
@@ -301,13 +301,15 @@ def merge_investors(db_path: str, keep_id: int, merge_id: int) -> None:
                 conn.execute(
                     """UPDATE interactions SET
                        status=?, coverage_code=?, raw_comments=?,
-                       old_comments=?, date_last_contact=?, date_om_sent=?
+                       old_comments=?, pass_reason=?,
+                       date_last_contact=?, date_om_sent=?
                        WHERE id=?""",
                     (
                         merged_fields["status"],
                         merged_fields["coverage_code"],
                         merged_fields["raw_comments"],
                         merged_fields["old_comments"],
+                        merged_fields["pass_reason"],
                         merged_fields["date_last_contact"],
                         merged_fields["date_om_sent"],
                         ki["id"],
@@ -352,7 +354,7 @@ def _merge_interaction_fields(keep: dict, merge: dict) -> dict:
     preferring the richer (more non-empty) record's data."""
     fields = [
         "status", "coverage_code", "raw_comments",
-        "old_comments", "date_last_contact", "date_om_sent",
+        "old_comments", "pass_reason", "date_last_contact", "date_om_sent",
     ]
 
     def richness(d):
@@ -399,7 +401,7 @@ def get_database_stats(db_path: str) -> dict:
 
 _ALLOWED_INTERACTION_UPDATE_FIELDS = {
     "status", "coverage_code", "raw_comments",
-    "old_comments", "date_last_contact", "date_om_sent",
+    "old_comments", "pass_reason", "date_last_contact", "date_om_sent",
 }
 
 
@@ -483,14 +485,79 @@ def get_deal_interactions(db_path: str, deal_id: int) -> list:
 
 
 # ---------------------------------------------------------------------------
-# CLI
+# 12a. record_source_file
 # ---------------------------------------------------------------------------
 
-_PII_FIELDS = {
-    "contact_name", "email", "phone",
-    "new_contact", "new_contact_role", "new_contact_email",
-}
+def record_source_file(db_path: str, file_path: str, deal_id: int,
+                       file_modified: str = None) -> int:
+    """Record or update a source file entry. Returns the source_file id.
 
+    file_modified is stored as integer seconds (Unix timestamp string).
+    If not provided, reads the file's current mtime from disk.
+    """
+    now = datetime.datetime.now().isoformat()
+    if file_modified is None:
+        file_modified = str(int(os.path.getmtime(file_path)))
+    conn = get_connection(db_path)
+    try:
+        existing = conn.execute(
+            "SELECT id FROM source_files WHERE file_path = ?", (file_path,)
+        ).fetchone()
+        if existing:
+            conn.execute(
+                """UPDATE source_files SET deal_id=?, last_imported=?,
+                   file_modified=? WHERE id=?""",
+                (deal_id, now, file_modified, existing["id"]),
+            )
+            conn.commit()
+            return existing["id"]
+        else:
+            cur = conn.execute(
+                """INSERT INTO source_files
+                   (file_path, deal_id, last_imported, file_modified)
+                   VALUES (?, ?, ?, ?)""",
+                (file_path, deal_id, now, file_modified),
+            )
+            conn.commit()
+            return cur.lastrowid
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# 12b. check_source_freshness
+# ---------------------------------------------------------------------------
+
+def check_source_freshness(db_path: str) -> list:
+    """Return list of source files modified since last import.
+
+    Compares file mtime (integer seconds) against stored value.
+    """
+    conn = get_connection(db_path)
+    try:
+        rows = conn.execute("SELECT * FROM source_files").fetchall()
+        stale = []
+        for row in rows:
+            fp = row["file_path"]
+            if not os.path.exists(fp):
+                continue
+            current_mtime = str(int(os.path.getmtime(fp)))
+            if current_mtime != row["file_modified"]:
+                stale.append({
+                    "file_path": fp,
+                    "deal_id": row["deal_id"],
+                    "last_imported": row["last_imported"],
+                    "stored_modified": row["file_modified"],
+                    "current_modified": current_mtime,
+                })
+        return stale
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 
 def _default_db_path() -> str:
     return os.path.join(os.path.expanduser("~"), ".v23", "placement-engine", "placement.db")
@@ -533,12 +600,6 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("--canonical-name", required=True)
     p.add_argument("--aliases", nargs="*", default=[])
     p.add_argument("--coverage-owner")
-    p.add_argument("--contact-name")
-    p.add_argument("--email")
-    p.add_argument("--phone")
-    p.add_argument("--new-contact")
-    p.add_argument("--new-contact-role")
-    p.add_argument("--new-contact-email")
 
     # insert-interaction
     p = sub.add_parser("insert-interaction", parents=[db_parent], help="Insert an interaction")
@@ -548,6 +609,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("--coverage-code")
     p.add_argument("--raw-comments")
     p.add_argument("--old-comments")
+    p.add_argument("--pass-reason")
     p.add_argument("--date-last-contact")
     p.add_argument("--date-om-sent")
 
@@ -558,8 +620,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # get-batch
     p = sub.add_parser("get-batch", parents=[db_parent], help="Get a batch of investors with interactions")
     p.add_argument("--offset", type=int, default=0)
-    p.add_argument("--limit", type=int, default=50)
-    p.add_argument("--strip-pii", action="store_true")
+    p.add_argument("--limit", type=int, default=100)
 
     # merge
     p = sub.add_parser("merge", parents=[db_parent], help="Merge two investors")
@@ -580,12 +641,22 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("--coverage-code")
     p.add_argument("--raw-comments")
     p.add_argument("--old-comments")
+    p.add_argument("--pass-reason")
     p.add_argument("--date-last-contact")
     p.add_argument("--date-om-sent")
 
     # update-deal-stats
     p = sub.add_parser("update-deal-stats", parents=[db_parent], help="Recalculate deal stats")
     p.add_argument("--deal-id", type=int, required=True)
+
+    # record-source-file
+    p = sub.add_parser("record-source-file", parents=[db_parent], help="Record or update a source file entry")
+    p.add_argument("--file-path", required=True)
+    p.add_argument("--deal-id", type=int, required=True)
+    p.add_argument("--file-modified", required=True)
+
+    # check-source-freshness
+    sub.add_parser("check-source-freshness", parents=[db_parent], help="Check source files for staleness")
 
     return parser
 
@@ -623,12 +694,6 @@ def main():
             db_path, args.canonical_name,
             aliases=args.aliases if args.aliases else None,
             coverage_owner=args.coverage_owner,
-            contact_name=args.contact_name,
-            email=args.email,
-            phone=args.phone,
-            new_contact=args.new_contact,
-            new_contact_role=args.new_contact_role,
-            new_contact_email=args.new_contact_email,
         )
         print(json.dumps({"id": inv_id}))
 
@@ -639,6 +704,7 @@ def main():
             coverage_code=args.coverage_code,
             raw_comments=args.raw_comments,
             old_comments=args.old_comments,
+            pass_reason=args.pass_reason,
             date_last_contact=args.date_last_contact,
             date_om_sent=args.date_om_sent,
         )
@@ -653,10 +719,6 @@ def main():
 
     elif args.command == "get-batch":
         batch = get_investor_batch(db_path, args.offset, args.limit)
-        if args.strip_pii:
-            for inv in batch:
-                for field in _PII_FIELDS:
-                    inv.pop(field, None)
         print(json.dumps(batch))
 
     elif args.command == "merge":
@@ -683,6 +745,16 @@ def main():
     elif args.command == "update-deal-stats":
         update_deal_stats(db_path, args.deal_id)
         print(json.dumps({"status": "ok"}))
+
+    elif args.command == "record-source-file":
+        sf_id = record_source_file(
+            db_path, args.file_path, args.deal_id, args.file_modified,
+        )
+        print(json.dumps({"id": sf_id}))
+
+    elif args.command == "check-source-freshness":
+        stale = check_source_freshness(db_path)
+        print(json.dumps(stale))
 
 
 if __name__ == "__main__":

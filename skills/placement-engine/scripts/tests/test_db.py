@@ -173,31 +173,6 @@ class TestInsertInvestor:
         assert aliases == []
         conn.close()
 
-    def test_extra_fields(self, tmp_db):
-        db.create_database(tmp_db)
-        inv_id = db.insert_investor(
-            tmp_db, "Acme Capital",
-            coverage_owner="HC",
-            contact_name="John",
-            email="john@acme.com",
-            phone="555-1234",
-            new_contact="Jane",
-            new_contact_role="VP",
-            new_contact_email="jane@acme.com",
-        )
-        conn = db.get_connection(tmp_db)
-        row = conn.execute(
-            "SELECT * FROM investors WHERE id=?", (inv_id,)
-        ).fetchone()
-        assert row["coverage_owner"] == "HC"
-        assert row["contact_name"] == "John"
-        assert row["email"] == "john@acme.com"
-        assert row["phone"] == "555-1234"
-        assert row["new_contact"] == "Jane"
-        assert row["new_contact_role"] == "VP"
-        assert row["new_contact_email"] == "jane@acme.com"
-        conn.close()
-
     def test_seeded_investors(self, seeded_db):
         stats = db.get_database_stats(seeded_db)
         assert stats["investor_count"] == 3
@@ -271,6 +246,19 @@ class TestInsertInteraction:
         assert row["date_om_sent"] == "2026-01-10"
         conn.close()
 
+    def test_pass_reason_stored(self, seeded_db):
+        iid = db.insert_interaction(
+            seeded_db, investor_id=1, deal_id=1,
+            status="Pass", pass_reason="No Office",
+            raw_comments="Not doing office",
+        )
+        conn = db.get_connection(seeded_db)
+        row = conn.execute(
+            "SELECT pass_reason FROM interactions WHERE id=?", (iid,)
+        ).fetchone()
+        assert row["pass_reason"] == "No Office"
+        conn.close()
+
     def test_foreign_key_enforcement(self, seeded_db):
         """Inserting interaction for nonexistent investor should fail."""
         with pytest.raises(sqlite3.IntegrityError):
@@ -337,6 +325,13 @@ class TestGetInvestorBatch:
         # No interactions inserted yet, each investor should have empty list
         for inv in batch:
             assert inv["interactions"] == []
+
+    def test_no_contact_fields_in_output(self, seeded_db):
+        batch = db.get_investor_batch(seeded_db, offset=0, limit=1)
+        inv = batch[0]
+        for field in ["contact_name", "email", "phone",
+                      "new_contact", "new_contact_role", "new_contact_email"]:
+            assert field not in inv
 
 
 # ---------------------------------------------------------------------------
@@ -470,6 +465,18 @@ class TestUpdateInteraction:
         with pytest.raises(ValueError):
             db.update_interaction(seeded_db, iid, investor_id=999)
 
+    def test_update_pass_reason(self, seeded_db):
+        iid = db.insert_interaction(
+            seeded_db, investor_id=1, deal_id=1, status="Pass",
+        )
+        db.update_interaction(seeded_db, iid, pass_reason="Too Small")
+        conn = db.get_connection(seeded_db)
+        row = conn.execute(
+            "SELECT pass_reason FROM interactions WHERE id=?", (iid,)
+        ).fetchone()
+        assert row["pass_reason"] == "Too Small"
+        conn.close()
+
     def test_update_allowed_fields_only(self, seeded_db):
         """All six allowed fields should be updatable."""
         iid = db.insert_interaction(
@@ -557,6 +564,35 @@ class TestGetDealInteractions:
         assert len(result) == 3
         names = {r["investor_name"] for r in result}
         assert names == {"Acme Capital", "Beta Partners", "Gamma Group"}
+
+
+# ---------------------------------------------------------------------------
+# 13. source_files tracking
+# ---------------------------------------------------------------------------
+
+class TestSourceFileTracking:
+    def test_record_source_file(self, seeded_db):
+        sf_id = db.record_source_file(
+            seeded_db, "/path/to/file.xlsx", deal_id=1,
+            file_modified="1712700000",
+        )
+        assert isinstance(sf_id, int)
+        assert sf_id >= 1
+
+    def test_record_source_file_updates_on_duplicate_path(self, seeded_db):
+        sf_id1 = db.record_source_file(
+            seeded_db, "/path/to/file.xlsx", deal_id=1,
+            file_modified="1712700000",
+        )
+        sf_id2 = db.record_source_file(
+            seeded_db, "/path/to/file.xlsx", deal_id=1,
+            file_modified="1712786400",
+        )
+        assert sf_id1 == sf_id2
+
+    def test_check_source_freshness_empty(self, seeded_db):
+        stale = db.check_source_freshness(seeded_db)
+        assert stale == []
 
 
 # ---------------------------------------------------------------------------
@@ -652,27 +688,6 @@ class TestCLI:
         output = json.loads(r.stdout)
         assert isinstance(output, list)
         assert len(output) == 1
-
-    def test_cli_get_batch_strip_pii(self, tmp_db):
-        self._run(["init"], tmp_db)
-        self._run([
-            "insert-investor", "--canonical-name", "Inv1",
-            "--contact-name", "Secret Person",
-            "--email", "secret@example.com",
-            "--phone", "555-0000",
-        ], tmp_db)
-        r = self._run([
-            "get-batch", "--offset", "0", "--limit", "10", "--strip-pii",
-        ], tmp_db)
-        assert r.returncode == 0
-        output = json.loads(r.stdout)
-        inv = output[0]
-        pii_fields = [
-            "contact_name", "email", "phone",
-            "new_contact", "new_contact_role", "new_contact_email",
-        ]
-        for field in pii_fields:
-            assert field not in inv
 
     def test_cli_merge(self, tmp_db):
         self._run(["init"], tmp_db)

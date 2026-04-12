@@ -172,19 +172,6 @@ class TestParseFormatA:
         codes = [r["coverage_code"] for r in result["rows"]]
         assert codes == ["HC", "MS", "SM"]
 
-    def test_contact_fields(self, format_a_xlsx):
-        result = parse_format_a(format_a_xlsx)
-        row0 = result["rows"][0]
-        assert row0["contact_name"] == "John Smith"
-        assert row0["email"] == "john@acme.com"
-
-    def test_new_contact_fields(self, format_a_xlsx):
-        result = parse_format_a(format_a_xlsx)
-        row2 = result["rows"][2]  # Gamma Group has new contact
-        assert row2["new_contact"] == "Alice Brown"
-        assert row2["new_contact_role"] == "VP"
-        assert row2["new_contact_email"] == "alice@gamma.com"
-
     def test_comments_mapping(self, format_a_xlsx):
         result = parse_format_a(format_a_xlsx)
         assert result["rows"][0]["raw_comments"] == "Not interested in this market"
@@ -201,7 +188,7 @@ class TestParseFormatA:
         ws = wb.active
         ws.title = "Detail"
         ws["A1"] = "Deal: Sparse Deal  01-Jan-26"
-        headers = ["Row #", "Status", "Cov.", "Capital Group", "Contact"]
+        headers = ["Row #", "Status", "Cov.", "Capital Group"]
         for col, h in enumerate(headers, 1):
             ws.cell(row=3, column=col, value=h)
         # Row with investor
@@ -223,7 +210,8 @@ class TestParseFormatA:
         ws = wb.active
         ws.title = "Detail"
         ws["A1"] = "Deal: None Test  01-Jan-26"
-        headers = ["Row #", "Status", "Cov.", "Capital Group", "Contact", "Email"]
+        headers = ["Row #", "Status", "Cov.", "Capital Group",
+                   "Placement Comments", "Old Comments"]
         for col, h in enumerate(headers, 1):
             ws.cell(row=3, column=col, value=h)
         ws.cell(row=4, column=4, value="Test Investor")
@@ -231,8 +219,8 @@ class TestParseFormatA:
         ws.cell(row=4, column=6, value="None")
         wb.save(path)
         result = parse_format_a(path)
-        assert result["rows"][0]["contact_name"] is None
-        assert result["rows"][0]["email"] is None
+        assert result["rows"][0]["raw_comments"] is None
+        assert result["rows"][0]["old_comments"] is None
 
     def test_prefers_detail_sheet(self, tmp_dir):
         """Should use 'Detail' sheet when available."""
@@ -282,13 +270,6 @@ class TestParseFormatB:
         result = parse_format_b(format_b_xlsx)
         codes = [r["coverage_code"] for r in result["rows"]]
         assert codes == ["HC", "MS", "SM"]
-
-    def test_contact_fields(self, format_b_xlsx):
-        result = parse_format_b(format_b_xlsx)
-        row0 = result["rows"][0]
-        assert row0["contact_name"] == "Tom Lee"
-        assert row0["email"] == "tom@delta.com"
-        assert row0["phone"] == "555-0001"
 
     def test_comments_mapping(self, format_b_xlsx):
         result = parse_format_b(format_b_xlsx)

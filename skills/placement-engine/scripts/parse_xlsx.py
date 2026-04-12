@@ -137,9 +137,8 @@ def _strip_numeric_prefix(status_str):
 # ---------------------------------------------------------------------------
 
 _FORMAT_A_COLUMNS = [
-    "Status", "Cov.", "Capital Group", "Contact", "Email",
-    "New Contact", "New - Role", "New - Email",
-    "Date - Last", "Last",  # "Date - Last" or "Last" for date_last_contact
+    "Status", "Cov.", "Capital Group",
+    "Date - Last", "Last",
     "Placement Comments", "Old Comments", "OM",
 ]
 
@@ -147,11 +146,6 @@ _FORMAT_A_MAP = {
     "Status": "status",
     "Cov.": "coverage_code",
     "Capital Group": "investor_name",
-    "Contact": "contact_name",
-    "Email": "email",
-    "New Contact": "new_contact",
-    "New - Role": "new_contact_role",
-    "New - Email": "new_contact_email",
     "Date - Last": "date_last_contact",
     "Last": "date_last_contact",
     "Placement Comments": "raw_comments",
@@ -216,8 +210,8 @@ def parse_format_a(file_path: str) -> dict:
 # ---------------------------------------------------------------------------
 
 _FORMAT_B_COLUMNS = [
-    "Status", "Coverage", "Capital Provider", "Contact Person",
-    "Contact Email", "Contact Numbers", "Date Sent",
+    "Status", "Coverage", "Capital Provider",
+    "Date Sent",
     "Placement Comments", "Previous / Other Commentary",
 ]
 
@@ -225,9 +219,6 @@ _FORMAT_B_MAP = {
     "Status": "status",
     "Coverage": "coverage_code",
     "Capital Provider": "investor_name",
-    "Contact Person": "contact_name",
-    "Contact Email": "email",
-    "Contact Numbers": "phone",
     "Date Sent": "date_last_contact",
     "Placement Comments": "raw_comments",
     "Previous / Other Commentary": "old_comments",

@@ -21,12 +21,8 @@ _COLUMNS = [
     ("Status", 12),
     ("Cov.", 6),
     ("Capital Group", 30),
-    ("Contact", 25),
-    ("Email", 30),
-    ("Last", 12),
-    ("OM", 12),
     ("Placement Comments", 40),
-    ("Match Notes", 50),
+    ("Old Notes", 50),
 ]
 
 _HEADER_FILL = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
@@ -39,7 +35,7 @@ _TIER_CONFIG = {
     3: ("Tier 3 \u2014 Long Shot", "FCE4D6"),
 }
 
-_NUM_COLS = len(_COLUMNS)  # 9
+_NUM_COLS = len(_COLUMNS)  # 5
 
 
 # ---------------------------------------------------------------------------
@@ -51,7 +47,7 @@ def export_placement_list(ranked_investors, output_path, deal_name=None):
 
     Args:
         ranked_investors: list of dicts with keys: investor_name, coverage_owner,
-            contact_name, email, match_notes, tier (1/2/3).
+            old_notes, tier (1/2/3).
         output_path: path to write the .xlsx file.
         deal_name: optional deal name for the header row.
     """
@@ -65,7 +61,7 @@ def export_placement_list(ranked_investors, output_path, deal_name=None):
 
     # -- Row 1: Deal header --
     if deal_name:
-        ws.merge_cells("A1:I1")
+        ws.merge_cells("A1:E1")
         cell = ws["A1"]
         cell.value = f"Deal: {deal_name}"
         cell.font = Font(bold=True, size=14)
@@ -91,7 +87,7 @@ def export_placement_list(ranked_investors, output_path, deal_name=None):
             tier_fill = PatternFill(start_color=color_hex, end_color=color_hex, fill_type="solid")
             tier_font = Font(bold=True, size=11)
 
-            merge_range = f"A{current_row}:I{current_row}"
+            merge_range = f"A{current_row}:E{current_row}"
             ws.merge_cells(merge_range)
             cell = ws.cell(row=current_row, column=1, value=label)
             cell.font = tier_font
@@ -112,12 +108,8 @@ def export_placement_list(ranked_investors, output_path, deal_name=None):
             None,                          # Status (blank)
             inv.get("coverage_owner", ""),  # Cov.
             inv.get("investor_name", ""),   # Capital Group
-            inv.get("contact_name", ""),    # Contact
-            inv.get("email", ""),           # Email
-            None,                          # Last (blank)
-            None,                          # OM (blank)
             None,                          # Placement Comments (blank)
-            inv.get("match_notes", ""),     # Match Notes
+            inv.get("old_notes", ""),       # Old Notes
         ]
 
         for col_idx, val in enumerate(row_data, 1):

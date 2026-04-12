@@ -24,33 +24,25 @@ def sample_investors():
         {
             "investor_name": "Acme Capital",
             "coverage_owner": "HC",
-            "contact_name": "John Smith",
-            "email": "john@acme.com",
-            "match_notes": "Strong multifamily track record in FL",
+            "old_notes": "Strong multifamily track record in FL. - Test Deal Alpha",
             "tier": 1,
         },
         {
             "investor_name": "Beta Partners",
             "coverage_owner": "MS",
-            "contact_name": "Jane Doe",
-            "email": "jane@beta.com",
-            "match_notes": "Interested in value-add, but prefers TX",
+            "old_notes": "Interested in value-add, but prefers TX. - Test Deal Alpha",
             "tier": 2,
         },
         {
             "investor_name": "Gamma Group",
             "coverage_owner": "SM",
-            "contact_name": "Bob Wilson",
-            "email": "bob@gamma.com",
-            "match_notes": "Expanding into new markets",
+            "old_notes": "Expanding into new markets. - Test Deal Beta",
             "tier": 2,
         },
         {
             "investor_name": "Delta Fund",
             "coverage_owner": "HC",
-            "contact_name": "Tom Lee",
-            "email": "tom@delta.com",
-            "match_notes": "Long shot, different strategy focus",
+            "old_notes": "Long shot, different strategy focus. - Test Deal Beta",
             "tier": 3,
         },
     ]
@@ -58,22 +50,18 @@ def sample_investors():
 
 @pytest.fixture
 def single_tier_investors():
-    """Investors all in the same tier (no tier separator needed between rows)."""
+    """Investors all in the same tier."""
     return [
         {
             "investor_name": "Alpha LLC",
             "coverage_owner": "HC",
-            "contact_name": "Alice A",
-            "email": "alice@alpha.com",
-            "match_notes": "Perfect match",
+            "old_notes": "Perfect match. - Deal X",
             "tier": 1,
         },
         {
             "investor_name": "Bravo Inc",
             "coverage_owner": "MS",
-            "contact_name": "Bob B",
-            "email": "bob@bravo.com",
-            "match_notes": "Also strong",
+            "old_notes": "Also strong. - Deal Y",
             "tier": 1,
         },
     ]
@@ -100,17 +88,13 @@ class TestFileCreation:
 
 
 class TestColumnHeaders:
-    def test_correct_9_column_headers_in_row_3(self, tmp_dir, sample_investors):
+    def test_correct_5_column_headers_in_row_3(self, tmp_dir, sample_investors):
         path = os.path.join(tmp_dir, "output.xlsx")
         export_placement_list(sample_investors, path)
         wb = openpyxl.load_workbook(path)
         ws = wb.active
-
-        expected = [
-            "Status", "Cov.", "Capital Group", "Contact", "Email",
-            "Last", "OM", "Placement Comments", "Match Notes",
-        ]
-        actual = [ws.cell(row=3, column=c).value for c in range(1, 10)]
+        expected = ["Status", "Cov.", "Capital Group", "Placement Comments", "Old Notes"]
+        actual = [ws.cell(row=3, column=c).value for c in range(1, 6)]
         assert actual == expected
         wb.close()
 
@@ -164,7 +148,7 @@ class TestDealHeader:
         ws = wb.active
 
         merged = [str(m) for m in ws.merged_cells.ranges]
-        assert any("A1" in m and "I1" in m for m in merged)
+        assert any("A1" in m and "E1" in m for m in merged)
         wb.close()
 
     def test_no_deal_header_when_none(self, tmp_dir, sample_investors):
@@ -193,7 +177,7 @@ class TestInvestorData:
         # row 5 is first investor
         # Find first non-separator data row
         investor_names = []
-        for row in ws.iter_rows(min_row=4, max_col=9, values_only=False):
+        for row in ws.iter_rows(min_row=4, max_col=5, values_only=False):
             val = row[2].value  # Column C (0-indexed: col 3)
             if val and not str(val).startswith("Tier"):
                 investor_names.append(val)
@@ -204,21 +188,19 @@ class TestInvestorData:
         assert "Delta Fund" in investor_names
         wb.close()
 
-    def test_match_notes_in_last_column(self, tmp_dir, sample_investors):
-        """Match Notes (col I / col 9) should contain match_notes."""
+    def test_old_notes_in_last_column(self, tmp_dir, sample_investors):
+        """Old Notes (col E / col 5) should contain old_notes."""
         path = os.path.join(tmp_dir, "output.xlsx")
         export_placement_list(sample_investors, path)
         wb = openpyxl.load_workbook(path)
         ws = wb.active
-
-        match_notes = []
-        for row in ws.iter_rows(min_row=4, max_col=9, values_only=False):
-            val = row[8].value  # Column I (0-indexed: col 9)
-            if val:
-                match_notes.append(val)
-
-        assert "Strong multifamily track record in FL" in match_notes
-        assert "Long shot, different strategy focus" in match_notes
+        old_notes = []
+        for row in ws.iter_rows(min_row=4, max_col=5, values_only=False):
+            val = row[4].value  # Column E
+            if val and not str(val).startswith("Tier"):
+                old_notes.append(val)
+        assert any("Strong multifamily" in n for n in old_notes)
+        assert any("Long shot" in n for n in old_notes)
         wb.close()
 
     def test_coverage_owner_in_cov_column(self, tmp_dir, sample_investors):
@@ -229,7 +211,7 @@ class TestInvestorData:
         ws = wb.active
 
         cov_values = []
-        for row in ws.iter_rows(min_row=4, max_col=9, values_only=False):
+        for row in ws.iter_rows(min_row=4, max_col=5, values_only=False):
             val = row[1].value  # Column B
             if val and not str(val).startswith("Tier"):
                 cov_values.append(val)
@@ -239,44 +221,18 @@ class TestInvestorData:
         assert "SM" in cov_values
         wb.close()
 
-    def test_contact_and_email_columns(self, tmp_dir, sample_investors):
-        """Contact (col D) and Email (col E) should be populated."""
+    def test_status_and_comments_blank(self, tmp_dir, sample_investors):
+        """Status and Placement Comments should be blank for new outreach."""
         path = os.path.join(tmp_dir, "output.xlsx")
         export_placement_list(sample_investors, path)
         wb = openpyxl.load_workbook(path)
         ws = wb.active
-
-        contacts = []
-        emails = []
-        for row in ws.iter_rows(min_row=4, max_col=9, values_only=False):
-            c = row[3].value  # Column D
-            e = row[4].value  # Column E
-            if c:
-                contacts.append(c)
-            if e:
-                emails.append(e)
-
-        assert "John Smith" in contacts
-        assert "john@acme.com" in emails
-        wb.close()
-
-    def test_status_last_om_comments_blank(self, tmp_dir, sample_investors):
-        """Status, Last, OM, Placement Comments should be blank for new outreach."""
-        path = os.path.join(tmp_dir, "output.xlsx")
-        export_placement_list(sample_investors, path)
-        wb = openpyxl.load_workbook(path)
-        ws = wb.active
-
-        for row in ws.iter_rows(min_row=4, max_col=9, values_only=False):
-            # Skip tier separator rows
-            if row[2].value and str(row[2].value).startswith("Tier"):
+        for row in ws.iter_rows(min_row=4, max_col=5, values_only=False):
+            if row[0].value and isinstance(row[0].value, str) and row[0].value.startswith("Tier"):
                 continue
-            # Only check investor rows (have a Capital Group value)
             if row[2].value:
                 assert row[0].value is None or row[0].value == ""  # Status (A)
-                assert row[5].value is None or row[5].value == ""  # Last (F)
-                assert row[6].value is None or row[6].value == ""  # OM (G)
-                assert row[7].value is None or row[7].value == ""  # Comments (H)
+                assert row[3].value is None or row[3].value == ""  # Placement Comments (D)
         wb.close()
 
 
@@ -354,14 +310,14 @@ class TestTierSeparators:
         wb.close()
 
     def test_tier_separator_merged(self, tmp_dir, sample_investors):
-        """Tier separator rows should have A:I merged."""
+        """Tier separator rows should have A:E merged."""
         path = os.path.join(tmp_dir, "output.xlsx")
         export_placement_list(sample_investors, path, deal_name="Merge Test")
         wb = openpyxl.load_workbook(path)
         ws = wb.active
 
         all_merges = [str(m) for m in ws.merged_cells.ranges]
-        # 1 deal header (A1:I1) + 3 tier separators = 4 merged ranges
+        # 1 deal header (A1:E1) + 3 tier separators = 4 merged ranges
         assert len(all_merges) >= 4, f"Expected >= 4 merges, got {len(all_merges)}: {all_merges}"
         # Verify at least one tier merge exists beyond row 1
         tier_merges = [m for m in all_merges if not m.startswith("A1")]
