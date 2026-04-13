@@ -1,9 +1,6 @@
 ---
 name: comp-search
 description: "Search, filter, and export commercial real estate sale and lease comparables from the V23 Database. Use this skill whenever the user asks about comps, comparables, sale comps, lease comps, rent comps, market comps, or wants to find deals/transactions by market, asset type, price, cap rate, or geography. Also trigger when the user says things like 'find me comps', 'pull comps', 'comp search', 'what sold in [area]', 'leasing activity in [area]', 'export comps to Excel', or any request involving searching the V23 Database for transaction or leasing data. Even if the user just says 'comps' or 'comparables' without much detail, use this skill."
-metadata:
-  version: "3.0.0"
-  author: "Vanadium Group"
 ---
 
 # V23 Comp Search & Export — v3
