@@ -1,24 +1,23 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "v23-plugins",
+  "version": "3.0.0",
+  "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, and capital placement workflows.",
   "owner": {
     "name": "Vanadium Group",
     "email": "tmouhlas@v23group.com"
   },
-  "metadata": {
-    "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, database utilities, and internal workflows.",
-    "version": "3.0.2"
-  },
   "plugins": [
     {
       "name": "v23",
-      "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, database utilities, and internal workflows.",
+      "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, and capital placement workflows.",
+      "version": "3.0.0",
+      "author": {
+        "name": "Vanadium Group",
+        "email": "tmouhlas@v23group.com"
+      },
       "source": "./",
-      "strict": false,
-      "skills": [
-        "./skills/comp-search",
-        "./skills/linkedin-research",
-        "./skills/placement-engine"
-      ]
+      "category": "productivity"
     }
   ]
 }
