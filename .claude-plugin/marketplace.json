@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vanadium Group (V23) tools \u2014 CRE comp search, LinkedIn research, database utilities, and internal workflows.",
-    "version": "3.0.0"
+    "version": "3.0.1"
   },
   "plugins": [
     {
       "name": "v23",
       "description": "Vanadium Group (V23) tools \u2014 CRE comp search, LinkedIn research, database utilities, and internal workflows.",
       "source": "./",
-      "version": "3.0.0",
+      "version": "3.0.1",
       "strict": true,
       "skills": [
         "./skills/comp-search",
