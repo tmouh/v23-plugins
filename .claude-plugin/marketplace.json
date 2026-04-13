@@ -5,16 +5,15 @@
     "email": "tmouhlas@v23group.com"
   },
   "metadata": {
-    "description": "Vanadium Group (V23) tools \u2014 CRE comp search, LinkedIn research, database utilities, and internal workflows.",
-    "version": "3.0.1"
+    "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, database utilities, and internal workflows.",
+    "version": "3.0.2"
   },
   "plugins": [
     {
       "name": "v23",
-      "description": "Vanadium Group (V23) tools \u2014 CRE comp search, LinkedIn research, database utilities, and internal workflows.",
+      "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, database utilities, and internal workflows.",
       "source": "./",
-      "version": "3.0.1",
-      "strict": true,
+      "strict": false,
       "skills": [
         "./skills/comp-search",
         "./skills/linkedin-research",
