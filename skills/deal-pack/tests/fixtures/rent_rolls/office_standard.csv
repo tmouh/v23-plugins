@@ -1,0 +1,4 @@
+unit,tenant,sqft,lease_start,lease_end,base_rent_annual,base_rent_psf,recoveries,options,security_deposit,notes
+101,Acme Corp,5000,2022-01-01,2027-12-31,150000,30.00,NNN,1x5yr,12500,
+102,Beta LLC,3000,2023-06-01,2028-05-31,96000,32.00,NNN,,8000,
+201,Gamma Inc,4000,2021-03-01,2026-02-28,120000,30.00,NNN,,10000,

@@ -1,7 +1,7 @@
 {
   "name": "v23",
-  "version": "3.0.0",
-  "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, and capital placement workflows.",
+  "version": "3.1.0",
+  "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, capital placement, and deal-pack normalization workflows.",
   "author": {
     "name": "Vanadium Group",
     "email": "tmouhlas@v23group.com"

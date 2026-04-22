@@ -1,0 +1,13 @@
+category,subcategory,line_item,total
+revenue,base_rent,Base Rent,800000
+revenue,recoveries,CAM Recoveries,120000
+revenue,recoveries,Tax Recoveries,60000
+revenue,other_income,Parking Income,20000
+revenue,less_vacancy,Vacancy Allowance,-50000
+controllable_opex,repairs_maintenance,R&M,60000
+controllable_opex,admin,General Admin,30000
+controllable_opex,payroll,Onsite Payroll,80000
+controllable_opex,utilities,Utilities,40000
+non_controllable_opex,property_tax,Real Estate Taxes,100000
+non_controllable_opex,insurance,Insurance,20000
+below_line,capex,Capital Reserve,15000
