@@ -5,6 +5,16 @@ description: "Ingest a folder of commercial real-estate due-diligence materials 
 
 # v23-deal-pack
 
+## Install
+
+The Python CLI lives at `tools/deal-pack-cli/` in this repo. Install it once per machine:
+
+```
+pip install -e <repo-clone>/tools/deal-pack-cli
+```
+
+After that, every `python -m deal_pack.cli ...` invocation below works from any cwd.
+
 ## When to use
 When V23 receives client DD materials for a new deal and needs them normalized
 into a clean working set before building the OM.
