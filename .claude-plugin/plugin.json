@@ -1,9 +1,11 @@
 {
   "name": "v23",
-  "version": "3.3.0",
   "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
+  "version": "3.3.1",
   "author": {
     "name": "Vanadium Group",
     "email": "tmouhlas@v23group.com"
-  }
+  },
+  "homepage": "https://github.com/tmouh/v23-plugins",
+  "repository": "https://github.com/tmouh/v23-plugins"
 }

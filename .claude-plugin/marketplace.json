@@ -1,7 +1,5 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "v23-plugins",
-  "version": "3.3.0",
   "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
   "owner": {
     "name": "Vanadium Group",
@@ -11,13 +9,12 @@
     {
       "name": "v23",
       "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
-      "version": "3.3.0",
+      "version": "3.3.1",
+      "source": "./",
       "author": {
         "name": "Vanadium Group",
         "email": "tmouhlas@v23group.com"
-      },
-      "source": "./",
-      "category": "productivity"
+      }
     }
   ]
 }
