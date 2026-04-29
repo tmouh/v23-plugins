@@ -1,13 +1,6 @@
 ---
 name: deal-pack
-description: |
-  Ingest a folder of commercial real-estate due-diligence materials (rent roll,
-  T-12, leases, photos, appraisal, seller OM, etc.) and produce a clean,
-  canonical "deal pack" folder (facts.md, financials.xlsx, leases/, images/,
-  sources/, pack-manifest.json). The pack is the source of truth that
-  Claude-in-PowerPoint consumes to build the OM live. Use when the user says
-  "deal pack", "normalize DD", "ingest materials", or provides a folder of
-  client due-diligence files.
+description: "Ingest a folder of commercial real-estate due-diligence materials (rent roll, T-12, leases, photos, appraisal, seller OM, etc.) and produce a clean, canonical 'deal pack' folder (facts.md, financials.xlsx, leases/, images/, sources/, pack-manifest.json). The pack is the source of truth that Claude-in-PowerPoint consumes to build the OM live. Use when the user says 'deal pack', 'normalize DD', 'ingest materials', or provides a folder of client due-diligence files."
 ---
 
 # v23-deal-pack
