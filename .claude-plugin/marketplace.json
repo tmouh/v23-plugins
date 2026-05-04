@@ -1,6 +1,6 @@
 {
   "name": "v23-plugins",
-  "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
+  "description": "Vanadium Group (V23) tools \u00e2\u20ac\u201d CRE comp search, LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
   "owner": {
     "name": "Vanadium Group",
     "email": "tmouhlas@v23group.com"
@@ -8,8 +8,8 @@
   "plugins": [
     {
       "name": "v23",
-      "description": "Vanadium Group (V23) tools — CRE comp search, LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
-      "version": "3.4.0",
+      "description": "Vanadium Group (V23) tools \u00e2\u20ac\u201d CRE comp search, LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
+      "version": "3.4.1",
       "source": "./plugins/v23",
       "category": "productivity",
       "author": {
@@ -17,5 +17,6 @@
         "email": "tmouhlas@v23group.com"
       }
     }
-  ]
+  ],
+  "version": "3.4.1"
 }
