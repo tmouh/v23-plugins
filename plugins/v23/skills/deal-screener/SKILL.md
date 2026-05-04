@@ -1,6 +1,6 @@
 ---
 name: deal-screener
-description: "Screen commercial real estate OMs, deal teasers, IC memos, underwriting models, or pitch decks with the eye of a senior CRE / capital-markets executive. Use whenever the user shares an OM or model, or says "screen this," "what do you think of this deal," "review this OM," "kick the tires on this," or pastes a property with financials. Works across all asset classes (multifamily, office, retail, industrial, hospitality, self-storage, data center, MHC, mixed-use, land) and all V23 seats (equity placement, debt placement, principal acquisition, LP-side advisory). Produces a structured screening report: forensic financial review, market check, sponsor read, risk register, ranked broker questions, and a pursue/pass/conditional verdict."
+description: "Screen commercial real estate OMs, deal teasers, IC memos, underwriting models, or pitch decks with the eye of a senior CRE / capital-markets executive. Use whenever the user shares an OM or model, or says 'screen this,' 'what do you think of this deal,' 'review this OM,' 'kick the tires on this,' or pastes a property with financials. Works across all asset classes (multifamily, office, retail, industrial, hospitality, self-storage, data center, MHC, mixed-use, land) and all V23 seats (equity placement, debt placement, principal acquisition, LP-side advisory). Produces a structured screening report: forensic financial review, market check, sponsor read, risk register, ranked broker questions, and a pursue/pass/conditional verdict."
 ---
 
 # Deal Screener
