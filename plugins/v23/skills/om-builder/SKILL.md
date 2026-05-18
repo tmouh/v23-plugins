@@ -1,6 +1,6 @@
 ---
 name: om-builder
-description: Generate a copy-paste prompt for Claude in PowerPoint to build a Vanadium-style commercial real estate Offering Memorandum (OM). Use when the user says 'build the OM', 'create an OM', 'generate offering memorandum', 'make an OM for [deal]', or points at a SharePoint-synced deal folder under \1- Realty\1- Deals\ and is ready to produce a deck. Output is a single pasteable prompt that handles file access via Microsoft 365 MCP, applies the Vanadium house style with a full layout repertoire, and offers a template-upload vs. default-style branch.
+description: "Generate a copy-paste prompt for Claude in PowerPoint to build a Vanadium-style commercial real estate Offering Memorandum (OM). Use when the user says 'build the OM', 'create an OM', 'generate offering memorandum', 'make an OM for a deal', or points at a SharePoint-synced deal folder under the 1- Realty / 1- Deals path and is ready to produce a deck. Output is a single pasteable prompt that handles file access via Microsoft 365 MCP, applies the Vanadium house style with a full layout repertoire, and offers a template-upload vs. default-style branch."
 ---
 
 # v23-om-builder

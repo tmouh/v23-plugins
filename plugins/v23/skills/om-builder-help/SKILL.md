@@ -1,6 +1,6 @@
 ---
 name: om-builder-help
-description: Use when the user asks for help with the om-builder workflow — phrases like 'om-builder help', 'omcreator help', 'om creator help', 'how does the OM builder work', 'what does the OM builder need', 'om-builder prereqs', 'om-builder setup', 'what do I need to build an OM', 'om-builder docs', or any meta question about prerequisites, caveats, troubleshooting, or extending the OM-creation pipeline. Returns a comprehensive guide covering what the skill does, prerequisites, step-by-step flow, what the pasteable prompt does in Claude in PowerPoint, known caveats and limitations, troubleshooting, and how to update or extend.
+description: "Use when the user asks for help with the om-builder workflow - phrases like 'om-builder help', 'omcreator help', 'om creator help', 'how does the OM builder work', 'what does the OM builder need', 'om-builder prereqs', 'om-builder setup', 'what do I need to build an OM', 'om-builder docs', or any meta question about prerequisites, caveats, troubleshooting, or extending the OM-creation pipeline. Returns a comprehensive guide covering what the skill does, prerequisites, step-by-step flow, what the pasteable prompt does in Claude in PowerPoint, known caveats and limitations, troubleshooting, and how to update or extend."
 ---
 
 # v23-om-builder-help
