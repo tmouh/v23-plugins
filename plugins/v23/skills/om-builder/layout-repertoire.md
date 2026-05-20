@@ -1,4 +1,34 @@
-Pick the layout whose content type matches the slide's purpose. Default to the simpler layout when in doubt — a single-narrative slide is always safer than an over-designed one. Split slides freely if content fights for space; merge when ideas span thin slides.
+════════════════════════════════════════════════════════════════
+LAYOUT VARIETY MANDATE (READ FIRST — OVERRIDES THE 12-LAYOUT CATALOG BELOW)
+════════════════════════════════════════════════════════════════
+
+The twelve layouts below are a starting library, not a ceiling. Treat every slide as a fresh design problem and invent the arrangement the information actually demands. Translate, rotate, resize, re-weight, invert, or hybridize any canonical layout, and reach for arrangements that aren't in the catalog at all:
+
+- a tall portrait photo on the right two-fifths beside three stacked stat blocks left-aligned in the remaining three-fifths
+- a horizontal photo strip across the top third with a four-column rent-roll table beneath
+- a centered 40pt headline number flanked by two narrow vertical prose columns on either side
+- a quadrant grid where each cell mixes one stat, one one-line caption, and one micro-chart
+- a building elevation drawn as a tall column with floor-by-floor stacking-plan blocks fanning out to its right
+- prose at top in a 2-1-3 weighted three-column rhythm above a half-height chart
+- a single big number anchored hard to the right edge while supporting prose left-aligned eats the remaining two-thirds
+- a navy header bar that runs only halfway across to make space for a chart bleeding into the title row
+- a five-pin annotated map at 60% width with a vertical stack of comp cards filling the other 40%
+
+**Aim for at least seven distinct arrangements across the deck. Never let two consecutive content slides share the same zone pattern.**
+
+When the pre-written content (from Claude Code) suggests a layout in plain English ("large left photo, narrow right stat column, bottom caption strip"), use it as the starting point but improve where a smarter arrangement reads faster, hits harder, or sits more elegantly on the page.
+
+Before composing each slide, ask: is there a smarter arrangement than the default that lets this particular set of facts read faster, hit harder, or sit more elegantly on the page? If yes, build the smarter one and document the deviation in one sentence at the end of the section.
+
+Repetition of layout is the single biggest tell that a deck was machine-built. Thoughtful, content-weighted variety — every slide earning its own composition — is the single biggest signal of editorial care.
+
+The layout choice for any given slide should be a direct reflection of the type of information that slide is conveying. The pre-written content provides the data; you provide the arrangement.
+
+════════════════════════════════════════════════════════════════
+THE 12 CANONICAL LAYOUTS (Starting Library)
+════════════════════════════════════════════════════════════════
+
+Pick or adapt the layout whose content type matches the slide's purpose. Default to the simpler arrangement when in doubt — a single-narrative slide is always safer than an over-designed one. Split slides freely if content fights for space; merge when ideas span thin slides. Hybridize freely per the MANDATE above.
 
 ────────────────────────────────────────────────────────────────
 LAYOUT 1 — SINGLE-NARRATIVE (text-heavy)
@@ -13,17 +43,9 @@ LAYOUT 1 — SINGLE-NARRATIVE (text-heavy)
 - Bold inline for key numerics and proper nouns only
 - Optional: small KPI strip at the bottom (y=420-470) with 3-4 supporting stats — anchors the prose with concrete numbers
 
-**Why:** Mayer's coherence — narrative without visual chrome lets the prose carry weight. Spatial-contiguity preserved by keeping bolded numerics inline with their context.
+**DO:** make each idea-block a complete thought; bold the numbers that support the thesis; use 13-14pt body, not 11pt.
 
-**DO:**
-- Make each idea-block a complete thought
-- Bold the numbers that support the thesis
-- Use 13-14pt body, not 11pt — there's room
-
-**DON'T:**
-- Wrap prose in cards or boxes
-- Add icons before each idea-block
-- Use bullets for narrative prose (bullets are for parallel lists, not stories)
+**DON'T:** wrap prose in cards or boxes; add icons before each idea-block; use bullets for narrative prose.
 
 ────────────────────────────────────────────────────────────────
 LAYOUT 2 — KPI STRIP (stats-driven)
@@ -37,21 +59,14 @@ LAYOUT 2 — KPI STRIP (stats-driven)
 - Column width = (840 − (N−1)×gap) / N, where gap = 12pt for 4-col, 8pt for 5-col
 - Each column = pale-blue panel `#E8EEF6` fill, no border, no rounded corners
 - Per column, three stacked elements (centered horizontally):
-  - Top label: 9pt Arial all caps `#9AA3B2` (e.g., "GOING-IN CAP RATE")
-  - Big number: 26-36pt Aptos navy `#1F3A5F` bold (e.g., "9.0%")
-  - Sub-detail (optional): 10-11pt Arial italic gray `#485269` (e.g., "Yr 1 NOI / $65M PP")
+  - Top label: 9pt Arial all caps `#9AA3B2`
+  - Big number: 26-36pt Aptos navy `#1F3A5F` bold
+  - Sub-detail (optional): 10-11pt Arial italic gray `#485269`
 - Below the strip: optional narrative explaining context, full-width 13-14pt Garamond
 
-**Why:** Dual coding — big numerics with minimal label gives one mental anchor per metric. Gestalt proximity groups label+number+detail visually.
+**DO:** equal column widths and equal gaps; center all three elements within each column.
 
-**DO:**
-- Equal column widths and equal gaps
-- Center all three elements within each column
-
-**DON'T:**
-- Use rounded corners on the panels
-- Add icons above the labels
-- Mix column widths
+**DON'T:** rounded corners on the panels; icons above the labels; mixed column widths.
 
 ────────────────────────────────────────────────────────────────
 LAYOUT 3 — HALF-AND-HALF (image + text)
@@ -66,17 +81,9 @@ LAYOUT 3 — HALF-AND-HALF (image + text)
 - Image fills its zone or maintains aspect ratio centered; caption italic 8pt directly below image
 - Right zone: 13-14pt Garamond prose; may include a small vertical KPI mini-strip (2-3 inline stats)
 
-**Why:** Mayer's spatial contiguity (d=1.10) — visual and supporting text sit next to each other. Cuts split-attention cost.
+**DO:** keep image rectangular, hard edges (no rounded corners); caption directly under image; right zone narrative scans the image's content.
 
-**DO:**
-- Keep image rectangular, hard edges (no rounded corners)
-- Caption directly under image, italic gray
-- Right zone narrative scans the image's content — the two zones reinforce one idea
-
-**DON'T:**
-- Wrap the image in a rounded frame
-- Add icons in the right zone
-- Make the two zones tell different stories
+**DON'T:** wrap the image in a rounded frame; add icons in the right zone; make the two zones tell different stories.
 
 ────────────────────────────────────────────────────────────────
 LAYOUT 4 — PHOTO GRID
@@ -92,16 +99,9 @@ LAYOUT 4 — PHOTO GRID
 - Each cell: hard-edge rectangle, photo fills cell
 - Caption italic 8pt directly under each photo, inside the grid
 
-**Why:** Tufte data-ink — photos ARE the content; chrome around them is wasted ink.
+**DO:** crop photos to consistent aspect ratio; equal cell sizes.
 
-**DO:**
-- Crop photos to consistent aspect ratio
-- Equal cell sizes
-
-**DON'T:**
-- Round photo corners
-- Float captions in separate boxes
-- Mix photo aspect ratios within the grid
+**DON'T:** round photo corners; float captions in separate boxes; mix photo aspect ratios within the grid.
 
 ────────────────────────────────────────────────────────────────
 LAYOUT 5 — MAP-DOMINANT
@@ -115,51 +115,31 @@ LAYOUT 5 — MAP-DOMINANT
 - Numbered pins ON the map, labeled inline next to each pin OR in the right legend with matching numbers
 - Caption italic 8pt below map ("Source: Google Maps, V23 markup" or similar)
 
-**Why:** Mayer's spatial contiguity (the strongest effect in the literature, d=1.10) — annotations on the map are far more memorable than annotations across the slide from the map.
+**DO:** annotate ON the map where possible; number-match pins to legend; show actual scale and orientation.
 
-**DO:**
-- Annotate ON the map where possible
-- Number-match pins to legend entries when legend is unavoidable
-- Show actual scale and orientation
-
-**DON'T:**
-- Float labels in slide corners
-- Use icons for pins; numbered circles or chevrons are clearer
-- Crop so tight the reader can't orient
+**DON'T:** float labels in slide corners; use icons for pins (numbered circles or chevrons are clearer); crop so tight the reader can't orient.
 
 ────────────────────────────────────────────────────────────────
 LAYOUT 6 — TABLE-DOMINANT
 ────────────────────────────────────────────────────────────────
 
-**Use when:** Rent Roll, Comparable Sales, Comparable Leases, Operating Financials (5-year build), Returns Summary detail. Content is structured data that needs to be scanned and compared.
+**Use when:** Rent Roll, Comparable Sales, Comparable Leases, Operating Financials, Returns Summary detail. Content is structured data that needs to be scanned and compared.
 
 **Structure:**
 - Headline takeaway at top (Garamond 13-14pt italic, y=120)
 - Table fills the rest: x=60 to x=900, y=160 to y=490
-- Table style:
-  - Hairline top and bottom rules (0.75pt navy)
-  - Header row: navy fill `#1F3A5F`, white Aptos 11-12pt bold
-  - Thin rule under header row (0.5pt)
-  - No vertical lines, no interior horizontal lines (or very subtle 5% navy alternating shading for dense rows)
-- Column alignment:
-  - First column (identifier): left-aligned
-  - Numeric columns: right-aligned
-  - Date / unit columns: center-aligned
+- Hairline top and bottom rules (0.75pt navy)
+- Header row: navy fill `#1F3A5F`, white Aptos 11-12pt bold
+- Thin rule under header row (0.5pt)
+- No vertical lines, no interior horizontal lines (or very subtle 5% navy alternating shading for dense rows)
+- First column (identifier): left-aligned
+- Numeric columns: right-aligned
+- Date / unit columns: center-aligned
 - Source line italic 8pt at y=502
 
-**Why:** Tufte data-ink — the table IS the content. Erase every gridline, border, or decoration that doesn't help the reader.
+**DO:** right-align all numerics; use parens for negatives; abbreviate currency; keep column count to 5-7.
 
-**DO:**
-- Right-align all numerics
-- Use parens for negatives (8.5)
-- Abbreviate currency: $63M, $114/SF
-- Keep column count to 5-7 (the sweet spot)
-
-**DON'T:**
-- Vertical lines between columns
-- Color-code rows by category (sort by the relevant metric instead)
-- Use icons in cells
-- Wrap headers across multiple lines unless necessary
+**DON'T:** vertical lines between columns; color-code rows by category; use icons in cells; wrap headers across multiple lines unless necessary.
 
 ────────────────────────────────────────────────────────────────
 LAYOUT 7 — CHART-DOMINANT
@@ -173,18 +153,9 @@ LAYOUT 7 — CHART-DOMINANT
 - Source line italic 8pt directly under the chart at y=440
 - Optional brief narrative below chart: 1-2 lines, y=460-490
 
-**Why:** Picture Superiority — a well-built chart conveys a relationship prose can't. Mayer spatial-contiguity — labels on the data points, not in a legend.
+**DO:** label bars/lines directly; flat fills, navy primary `#1F3A5F`, mid-blue secondary `#5B7FA8`; horizontal-only gridlines sparingly.
 
-**DO:**
-- Label bars/lines directly (e.g., "$5.83M" on the Year 1 bar)
-- Flat fills, navy primary `#1F3A5F`, mid-blue secondary `#5B7FA8`
-- Horizontal-only gridlines if any, light gray, sparingly
-- Show source
-
-**DON'T:**
-- Legend across the slide from the chart
-- 3D effects, gradients, drop shadows, chart borders
-- Bevel or glow on data series
+**DON'T:** legend across the slide from the chart; 3D effects, gradients, drop shadows, chart borders; bevel or glow on data series.
 
 ────────────────────────────────────────────────────────────────
 LAYOUT 8 — TWO-COLUMN COMPARISON
@@ -198,16 +169,9 @@ LAYOUT 8 — TWO-COLUMN COMPARISON
 - Below header: structured content (table, KPI list, prose paragraph) — same structure in both columns
 - Equal alignment of comparable elements across columns
 
-**Why:** Gestalt proximity + similarity — readers compare matched rows when the two sides have identical structure.
+**DO:** identical row structures in both columns; highlight the delta with bold or sparing red on the worse side.
 
-**DO:**
-- Identical row structures in both columns (rent on row 1 in left = rent on row 1 in right)
-- Highlight the delta with bold or with the sparing red on the "worse" side
-
-**DON'T:**
-- Different row counts across columns
-- Different fonts or sizes across columns
-- Stack the two as full-width sections (defeats the comparison)
+**DON'T:** different row counts across columns; different fonts or sizes; stack the two as full-width sections.
 
 ────────────────────────────────────────────────────────────────
 LAYOUT 9 — INVESTMENT HIGHLIGHTS (bullet list with bold headers)
@@ -219,28 +183,19 @@ LAYOUT 9 — INVESTMENT HIGHLIGHTS (bullet list with bold headers)
 - Headline takeaway at top
 - 4-7 highlight blocks stacked vertically
 - Each block:
-  - **Bold Garamond navy** thesis statement (one line) — e.g., "**Basis is the deal.**"
+  - **Bold Garamond navy** thesis statement (one line)
   - Body text below it: 13pt Garamond `#485269`, 2 lines explaining the thesis with bolded numerics
   - 8-10pt spacer to next block
 
-**Why:** The bold-then-body rhythm makes the thesis scannable in 10 seconds (read just the bolds) and supportable in 30 seconds (read the bodies). Mayer signaling.
+**DO:** bold only the thesis statement line, not the whole block; sentence case in the thesis statement; keep each body to 2 lines max.
 
-**DO:**
-- Bold only the thesis statement line, not the whole block
-- Sentence case in the thesis statement
-- Keep each body to 2 lines max
-
-**DON'T:**
-- Card grids
-- Icons before each highlight
-- Numbered highlights
-- Same opening word ("Strong," "Robust," "Compelling") on every highlight — vary
+**DON'T:** card grids; icons before each highlight; numbered highlights; same opening word ("Strong," "Robust," "Compelling") on every highlight.
 
 ────────────────────────────────────────────────────────────────
-LAYOUT 10 — FULL-BLEED VISUAL (rendering or floor plan)
+LAYOUT 10 — FULL-BLEED VISUAL (rendering, floor plan, aerial)
 ────────────────────────────────────────────────────────────────
 
-**Use when:** Building renderings, floor plans, large architectural diagrams. Content is one large visual that needs to dominate.
+**Use when:** Building renderings, floor plans, large architectural diagrams, drone-shot aerials. Content is one large visual that needs to dominate.
 
 **Structure:**
 - Visual fills nearly the full slide: x=0 to x=960, y=80 to y=502 (extends past the standard margin)
@@ -248,22 +203,11 @@ LAYOUT 10 — FULL-BLEED VISUAL (rendering or floor plan)
 - Caption italic 8pt at y=502
 - Footer bar unchanged
 
-**Why:** Some content demands full visual real estate. A building rendering should not be shrunk to fit a 60pt margin.
-
-**DO:**
-- Note the deviation from the margin grid explicitly in your section depth plan
-- Ensure caption is legible against the visual (white background bar if needed)
-- Preserve the footer bar
-
-**DON'T:**
-- Force a rendering into a half-and-half layout when it deserves the full slide
-- Crop the rendering to fit a non-standard aspect
-
 ────────────────────────────────────────────────────────────────
 LAYOUT 11 — SECTION DIVIDER
 ────────────────────────────────────────────────────────────────
 
-**Use when:** Major section transitions (e.g., between "Asset" and "Market," or "Market" and "Financials"). Optional — only if the deck is long enough to warrant breaks.
+**Use when:** Major section transitions. Optional — only if the deck is long enough to warrant breaks.
 
 **Structure:**
 - Mostly empty slide
@@ -272,40 +216,19 @@ LAYOUT 11 — SECTION DIVIDER
 - Footer bar unchanged
 - No subtitle, no narrative
 
-**Why:** Breathing room. Signals chapter change without burning content density.
-
-**DO:**
-- Use sparingly — only when content volume justifies
-- Keep all dividers visually identical (same position, same size, same treatment)
-
-**DON'T:**
-- Stock photos behind the section name
-- Gradient backgrounds
-- Icons next to the section name
-
 ────────────────────────────────────────────────────────────────
 LAYOUT 12 — HYBRID: NARRATIVE + EMBEDDED CHART
 ────────────────────────────────────────────────────────────────
 
-**Use when:** Operating Financials, Returns Summary. Content needs both a story-prose explanation AND a quantitative anchor chart.
+**Use when:** Operating Financials, Returns Summary. Content needs both story-prose AND a quantitative anchor chart.
 
 **Structure:**
 - Top half (y=140 to y=300): narrative prose (Garamond 13-14pt, 2-3 idea-blocks)
 - Bottom half (y=320 to y=480): chart spanning x=60 to x=900
 - Source line italic 8pt at y=495 under the chart
 
-**Why:** Tells the story AND shows the data on one page. Mayer coherence (narrative carries the takeaway), Tufte data-ink (chart shows the underlying numbers).
-
-**DO:**
-- Keep prose tight — this isn't the place for 4 idea-blocks
-- Label chart data directly
-
-**DON'T:**
-- Make the chart smaller than ~150pt tall (illegible)
-- Run prose past y=300 (it'll crowd the chart)
-
 ────────────────────────────────────────────────────────────────
-LAYOUT-SELECTION CHEAT SHEET
+DEFAULT MAPPING (STARTING POINT — DEVIATE PER THE MANDATE ABOVE)
 ────────────────────────────────────────────────────────────────
 
 | Content type | Default layout |
@@ -319,8 +242,8 @@ LAYOUT-SELECTION CHEAT SHEET
 | Single chart story | Layout 7 — Chart |
 | Side-by-side scenarios | Layout 8 — Comparison |
 | Investment thesis bullets | Layout 9 — Highlights (specific pattern) |
-| Big visual (rendering, floor plan) | Layout 10 — Full-bleed |
+| Big visual (rendering, floor plan, aerial) | Layout 10 — Full-bleed |
 | Major section break | Layout 11 — Divider |
 | Prose + supporting chart | Layout 12 — Hybrid |
 
-When proposing the section depth plan in Step 6 of the build prompt, name the layout per slide. Document any deviation from the default in the cheat sheet with a one-sentence rationale.
+This mapping is a starting point only. The MANDATE above governs final composition — every slide deserves a composition that reflects its specific content, not a checkbox match against this table.
