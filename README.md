@@ -49,6 +49,5 @@ Each skill needs at minimum a `SKILL.md` with `name` and `description` frontmatt
 
 ## Requirements
 
-- **comp-search**: Read-only access to `C:\Users\TheodoreMouhlas\Vanadium Group LLC\V23 - Database` mounted in Cowork
 - **linkedin-research**: Chrome browser open and logged into LinkedIn
 - **placement-engine**: Python 3.10+ with openpyxl, thefuzz, python-Levenshtein
