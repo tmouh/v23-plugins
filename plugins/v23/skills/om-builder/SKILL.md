@@ -57,7 +57,7 @@ Do NOT use for:
 - **Reference DNA subagent** *(new-build mode only — skip in revision mode)* — one Explore agent reads 5–8 prior Vanadium production OMs/decks, returns layout/voice/structural observations as a digest
 - **3–5 Research subagents** — general-purpose agents in parallel, each scoped to ONE research question, return cited findings with quoted passages + URLs + as-of dates
 
-**CC synthesizes** with access to both raw direct-read data AND subagent digests, writes The Story + content (composition mode) OR per-shape actions (revision mode), then runs a **verification gate** that re-reads canonical sources for every critical numeric/quote AND surfaces source-of-truth conflicts before shipping.
+**CC synthesizes** with access to both raw direct-read data AND subagent digests, writes The Story + content (composition mode) OR per-shape actions (revision mode), then runs a **verification gate** that re-reads canonical sources for every critical numeric/quote AND surfaces source-of-truth conflicts before shipping, writing a persistent **audit ledger** (every figure → source → as-of date → verified). Before research, CC builds a **coverage manifest** that flags what the deal is missing against the OM Coverage Checklist — holes are surfaced, not silently plugged.
 
 ### 🔥 CIP context-loss is a load-bearing constraint
 
@@ -248,6 +248,26 @@ CC extracts and structures (in working notes):
 - Gaps — what's missing from the folder that an institutional LP would demand
 - **(Revision mode)** Per-slide cross-walk: for each slide in the inventory, map user's directives (add/modify/stop lists from Phase 1.5) to specific shapes that need changing
 
+### Phase 3.5 — Build the Coverage Manifest (flag the holes BEFORE filling them)
+
+Now that CC has read the folder, diff what the deal actually HAS against what an institutional OM MUST cover. The goal is to **flag holes, not silently plug them.**
+
+1. Take the enumerated **OM Coverage Checklist** (see the reference section of that name below).
+2. For each required item, mark a status from the Phase 2/3 reads:
+   - **Have** — a source in the folder fully supports it (name the file + tab/page).
+   - **Partial** — some support exists but it's thin, stale, or unsourced.
+   - **Missing** — nothing in the folder supports it.
+3. For every Partial/Missing item, tag a **fill-route**:
+   - **Research-fillable** — external market / sponsor-public data a Phase 6 subagent can source (submarket fundamentals, comps, sponsor public record, capital-markets context).
+   - **Client-only** — only the sponsor/client can provide it (rent roll, T-12, sizing model, proprietary business-plan detail, asset photos). Research cannot manufacture these.
+   - **Synthesis** — CC produces it from inputs already present (The Story, risk register, LP-question pre-empt).
+4. **Save the manifest** to `<deal-folder>\x V23\<deal>-OM-Coverage-Manifest.md` as a table: `Required item | Status | Source-or-gap | Fill-route`. Create the `\x V23\` subfolder if needed.
+5. **Surface it to the user NOW, front-and-center** — this is warn-only, it does NOT halt the run. Present two short lists: "I will research these" (research-fillable gaps) and "Only the sponsor/client can supply these — request them" (client-only gaps).
+
+**Warn-only behavior:** never block. Proceed to build, but every client-only Missing item becomes a literal `TBD — confirm with sponsor` placeholder in the content (never a guessed value). The manifest feeds Phase 4 (research-fillable gaps become research questions), Phase 8 (verify no Missing item got silently filled with an unsourced number), and Phase 10 (the front-facing open-items list).
+
+**Revision mode:** Phase 3.5 is optional but recommended — run it against the existing deck's coverage so directives that delete/retitle slides don't accidentally strip a required section. If you skip it, say so.
+
 ### Phase 4 — Identify research scopes (this is where the work pays off)
 
 Based on the folder read, identify 3–5 *specific* research questions that, if answered, complete The Story. Examples (the actual list depends on the deal):
@@ -359,6 +379,8 @@ Before assembling the prompt/script for CIP, CC re-reads canonical sources for e
 - **Cross-document consistency** — cross-check 5–10 key figures across the prose: PP, total cap, equity ask, debt, IRR, EM, NOI Yr 1, NOI Yr 5, exit value, exit cap rate
 - **(Revision mode) Stop-list compliance** — search the proposed edit script for every phrase in the Phase 1.5 stop list. If any survives, fix or surface
 - **(Revision mode) Shape inventory consistency** — every "Action N.M" references a shape ID that exists in the inventory with current text matching the action's precondition
+
+**Write the audit ledger.** Record the verification as a persistent artifact — `<deal-folder>\x V23\<deal>-OM-Audit-Ledger.md` — one row per critical claim: `Claim/figure | Value | Source (file+tab/page or URL) | As-of date | Tier | Verified (Y/N)`. This is the reviewable trail for every number and quote in the deck; surface its path in Phase 10. A figure that is not in the ledger as Verified=Y must not ship (mark it `TBD` instead).
 
 #### Source-of-truth conflict resolution
 
@@ -495,8 +517,10 @@ How to use:
 ━━━━ END COPY ━━━━
 ```
 
-5. The **Data Conflicts appendix** if Phase 8 found any.
-6. ⚠ Any visual-asset Graph URI that couldn't be resolved (look up manually before pasting).
+5. **Coverage & Open Items** — the path to `\x V23\<deal>-OM-Coverage-Manifest.md` plus a short front-facing summary: what's covered, what's `TBD`/client-needed, and what was researched to fill a gap.
+6. **Audit ledger** — the path to `\x V23\<deal>-OM-Audit-Ledger.md` (every figure → source → as-of date → verified).
+7. The **Data Conflicts appendix** if Phase 8 found any.
+8. ⚠ Any visual-asset Graph URI that couldn't be resolved (look up manually before pasting).
 
 #### Revision mode
 
@@ -505,6 +529,7 @@ How to use:
 - The path to the finished revised file (`<deal-folder>\x V23\<deal>-vN.pptx`).
 - Confirmation that you re-ran `extract-pptx-inventory.py` on the output and the edits landed + stop-list phrases are gone (PASS/FAIL per phrase).
 - **The Data Conflicts appendix** from Phase 8.
+- **Audit ledger** path (`\x V23\<deal>-OM-Audit-Ledger.md`) for figures changed or added; plus the coverage-manifest path if Phase 3.5 was run.
 - Any edits routed to Path B (and why), plus any unresolved questions.
 - If any edit SKIPPED on a precondition mismatch, surface it — do not silently ship a partial revision.
 
@@ -515,6 +540,24 @@ How to use:
 - The stop-list compliance status (PASS/FAIL per phrase).
 - Any unresolved questions for the user.
 - Do NOT paste the full edit script into the conversation — it's long. Reference the file path.
+
+## OM Coverage Checklist
+
+The asset-class-agnostic set of analytical purposes an institutional OM must serve. Phase 3.5 diffs the deal folder against this list; Phase 7 maps each onto deal-appropriate sections (do NOT treat these as literal slide titles). An item may be marked **N/A** in the manifest only with a one-line justification.
+
+1. **The Story / Investment Thesis** — the one-sentence thesis + the 3–5 load-bearing claims it rests on. *Fill-route: synthesis.*
+2. **Executive Summary** — deal-at-a-glance: asset, location, ask, headline returns. *Synthesis from the sizing model.*
+3. **Setting — Market & Submarket** — vacancy, asking rents, supply pipeline, absorption, cap-rate trend in the EXACT submarket, as-of dated. *Research-fillable.*
+4. **The Opportunity / Business Plan** — what we do to create value and on what timeline. *Sponsor OM + V23 analysis (client-only if absent).*
+5. **The Asset** — physical/operational description, location context, photos/aerials/renderings. *Client-only for proprietary visuals.*
+6. **Sponsor / Operator** — track record, AUM, prior exits, principal bios, capital partners, any public disputes. *Research-fillable (public) + client-only (proprietary).*
+7. **Financials — Sources & Uses** — total capitalization, equity ask, debt amount + terms, the full cap stack. *Client-only (sizing model).*
+8. **Returns** — IRR, equity multiple / MoIC, NOI trajectory, exit value + exit cap rate, hold period. *Client-only (sizing model).*
+9. **Comparables** — sale comps + lease/rent comps with $/SF, $/AC, or $/door and cap rates, as-of dated. *Research-fillable (+ V23 comp DB).*
+10. **Risk Register** — each material risk framed as probability × impact × mitigation. *Synthesis.*
+11. **LP Cutting-Questions** — pre-empt the hardest diligence questions an institutional LP will ask. *Synthesis.*
+
+Emphasis and depth vary by asset class — see "Asset-class adaptation guidance." Items 7–8 are the load-bearing client-only inputs: if no sizing model is present, the manifest flags them Missing/client-only and the deck builds with `TBD — confirm with sponsor` rather than invented numbers.
 
 ## Source-quality bar
 
@@ -527,6 +570,8 @@ Acceptable sources for any cited claim in the OM:
 **NOT acceptable:** Medium/Substack posts (unless credentialed author with institutional affiliation), broker marketing PDFs as data sources (their listings are fine; their thesis pieces require Tier 1/2 corroboration), Wikipedia citations as primary sources, generic blog posts, opinion pieces without data, vendor-sponsored "studies" without methodology, anonymous social media, Reddit, generic press releases.
 
 Every cited claim must include an as-of date. Stale comps are worse than missing comps.
+
+**This standard is also codified globally** at `~/.claude/rules/cre-source-tiers.md` (applies to all of this user's CRE research, not just OMs). The skill keeps its own copy here because the plugin must carry the standard to teammates who don't have that local rule — keep the two consistent.
 
 ## Subagent dispatch rules
 
@@ -542,7 +587,7 @@ Every cited claim must include an as-of date. Stale comps are worse than missing
 
 After Phase 7 synthesis, before Phase 9 assembly:
 
-1. **Numerics audit** — for every numeric in the pre-written content (or in every edit-script "type this" block), identify its source path + tab/page. Re-open and verify. Track in a simple ledger (claim → source → verified Y/N).
+1. **Numerics audit** — for every numeric in the pre-written content (or in every edit-script "type this" block), identify its source path + tab/page. Re-open and verify. Record each in the persistent audit ledger (`\x V23\<deal>-OM-Audit-Ledger.md`): claim → value → source → as-of date → tier → verified Y/N.
 2. **Cross-document audit** — pick 5–10 key figures (PP, equity ask, debt, IRR, EM, etc.) and verify they're identical across every prose block, KPI, table, and chart in the output.
 3. **Quote audit** — every quoted passage attributed to sponsor materials or V23 work product is re-read against the source file.
 4. **Research audit** — for each research finding cited in the OM, re-fetch the source URL via WebFetch and verify the passage still appears as cited.
@@ -581,6 +626,8 @@ This list is suggestive, not exhaustive. CC chooses scopes based on what the dea
 - Never write generic value-add language ("compelling," "strong," "robust") without substituting specifics; never list risks without probability × impact × mitigation.
 - Never tell CIP "use the content I wrote earlier" or "reference the prior section." CIP doesn't reliably retain across turns; every action must be self-contained.
 - Never silently average, hedge, or fudge conflicting source values. Pick the most recent, cite, surface alternatives.
+- Always run the Phase 3.5 coverage manifest and surface gaps to the user — flag holes, never silently plug them. Client-only Missing items ship as `TBD — confirm with sponsor`, never as a guessed value.
+- Always write the Phase 8 audit ledger; never ship a figure that isn't in it as Verified=Y.
 - Preserve the LAYOUT VARIETY MANDATE (new-build mode); never let two consecutive content slides share the same zone pattern; aim for ≥ 7 distinct arrangements across the deck.
 - (Revision mode) Never overwrite the original file the user has marked as the live version. If revision mode is detected against `<filename>.pptx` and the user says "use v2 only," the edit script targets v2; the original stays untouched. The edit script's preflight + post-edit checklist must explicitly name the target file.
 
@@ -594,9 +641,11 @@ This list is suggestive, not exhaustive. CC chooses scopes based on what the dea
 | Phase 1 ambiguity asks | Asset class, sponsor identity, deal folder | All of NB + which .pptx is live, which pipeline is canonical |
 | Phase 1.5 | Optional (only if user provided feedback) | Mandatory — stop list is load-bearing |
 | Phase 3 .pptx extraction | Skip | Required (run `scripts/extract-pptx-inventory.py`) |
+| Phase 3.5 coverage manifest | Build + save (`<deal>-OM-Coverage-Manifest.md`); warn-only, never halts | Optional (check existing deck's coverage) |
 | Phase 5 Reference DNA | Optional (DNA codified in `house-voice.md` + `layout-repertoire.md`) | Skip |
 | Phase 7 output | `build-deck.py` JSON content spec (text in-voice + layout keys) | Per-shape actions with IDs + verbatim text |
 | Phase 8 verification adds | Conflict resolution + anti-AI pass (`house-voice.md`) | Conflict resolution + stop-list audit + inventory audit + anti-AI pass on new prose |
+| Phase 8 audit ledger | Saved (`<deal>-OM-Audit-Ledger.md`) | Saved (figures changed/added) |
 | Phase 9 delivery | CC runs `build-deck.py` → finished `.pptx`; then short CIP polish prompt | **Path A (default):** CC runs `apply-revision-edits.py` → finished `.pptx`. **Path B:** CIP edit script |
 | Phase 10 to user | Generated file path + verification + polish prompt + Data Conflicts | Path A: engine report + revised-file path + verification. Path B: edit-script path. Both: Data Conflicts + stop-list status |
 | Typical CIP behavior | Polishes a CC-generated deck: fill placeholders, place images, visual QA | Path A: CIP not used. Path B: CIP executes select/delete/type/format/save |
@@ -613,6 +662,7 @@ If you need to refine the architecture or add capabilities:
 6. Edit `scripts/apply-revision-edits.py` — revision engine (Path A): set_text/rich_text/cell/chart_series/geometry, insert_slide, delete_slide
 7. Edit `scripts/build-deck.py` — new-build generator (core layouts from the house template)
 8. Edit `scripts/make-template.py` + `assets/v23-template.pptx` — regenerate the house template if the master/theme changes
+9. Edit `~/.claude/rules/cre-source-tiers.md` — the GLOBAL CRE source-tier + claim-auditability standard (this user's machine); keep it consistent with the `Source-quality bar` + `OM Coverage Checklist` sections here
 5. Update memories if framework knowledge improves (`[[user-the-story-framework]]`, `[[user-vanadium-analysis-conventions]]`)
 6. Bump version in `.claude-plugin/plugin.json` AND `.claude-plugin/marketplace.json`
 7. Commit so clients pick up the change
