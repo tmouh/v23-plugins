@@ -1,6 +1,6 @@
 ---
 name: om-builder-help
-description: "Use when the user asks for help with the om-builder workflow - phrases like 'om-builder help', 'omcreator help', 'om creator help', 'how does the OM builder work', 'what does the OM builder need', 'om-builder prereqs', 'om-builder setup', 'what do I need to build an OM', 'om-builder docs', or any meta question about prerequisites, caveats, troubleshooting, or extending the OM-creation pipeline. Returns a comprehensive guide covering what the skill does, prerequisites, step-by-step flow, what the pasteable prompt does in Claude in PowerPoint, known caveats and limitations, troubleshooting, and how to update or extend."
+description: "Use when the user asks for help with the om-builder workflow - phrases like 'om-builder help', 'omcreator help', 'om creator help', 'how does the OM builder work', 'what does the OM builder need', 'om-builder prereqs', 'om-builder setup', 'what do I need to build an OM', 'om-builder docs', or any meta question about prerequisites, caveats, troubleshooting, or extending the OM-creation pipeline. Returns a comprehensive guide covering the v6 gated artifact pipeline, prerequisites, the phase-by-phase flow with human gates, the build and revision scripts, the QA loop, optional Claude-in-PowerPoint polish, known caveats and limitations, troubleshooting, and how to update or extend."
 ---
 
 # v23-om-builder-help
@@ -9,185 +9,201 @@ When the user invokes help on the om-builder workflow, present the guide below. 
 
 ---
 
-# Vanadium OM Builder — Help & Reference
+# Vanadium OM Builder v6 — Help & Reference
 
 ## What is the OM Builder?
 
-`v23:om-builder` is a skill that generates a copy-paste prompt for **Claude in PowerPoint** to build a Vanadium-style commercial real estate Offering Memorandum from a SharePoint-synced deal folder.
+`v23:om-builder` builds or revises a Vanadium-grade commercial real estate Offering Memorandum **end-to-end inside Claude Code** using a gated artifact pipeline. Claude Code (CC) reads the deal folder directly, extracts and audits every number into a persistent ledger, researches gaps with parallel subagents, writes a slide-by-slide blueprint, and authors the `.pptx` itself via `scripts/build-deck.py`, seeded from the house template (`assets/v23-template.pptx`).
 
-The skill itself runs in **Claude Code**, not in PowerPoint. It produces one block of text you paste into Claude in PowerPoint's chat panel, which then drives the live deck build.
+**Claude in PowerPoint (CIP) is no longer the build engine.** The v4/v5 "pasteable prompt" architecture is retired — there is no prompt to paste, and the old `prompt-template.md` / `layout-repertoire.md` files no longer exist. CIP's only remaining roles are optional and bounded: post-QA visual polish (cover photos, logo placement, annotated aerials) and Path-B revision edits that genuinely require visual judgment.
 
-It encodes the lessons from prior Vanadium OM productions — canonical reference is the **105 N 13th Street OM (April 2026)** — including the house design system, layout repertoire, voice principles, and anti-AI guardrails.
+The house style and voice are no longer inferred from a single reference deck. They are codified in eight reference docs derived from the 2026-06 pattern study across V23 production materials 2020–2026 (see "Reference docs and scripts" below).
+
+The pipeline is asset-class agnostic and covers all capital types (equity, debt, pref, JV). Human gates sit after Phases 0, 1, 3, and 5 — nothing is built before the blueprint gate clears.
 
 ## How to invoke
 
 In Claude Code, say one of these (or natural variants):
 - "Build the OM for [deal name or folder]"
 - "Create an OM for [deal]"
-- "Generate offering memorandum for [deal folder]"
-- "Make an OM for [deal]"
+- "Revise / refresh the OM for [deal]"
+- Point at a deal folder under `\1- Realty\1- Deals\`
 
-For help (this guide):
-- "om-builder help"
-- "omcreator help"
-- "how does the OM builder work"
-- "what does the OM builder need"
+For help (this guide): "om-builder help", "omcreator help", "how does the OM builder work", "what does the OM builder need".
+
+## Version check
+
+The runbook prints a version echo at the start of every run:
+
+> `om-builder v6.0.0 — if this does not match the installed plugin version, your install is stale (see om-builder-help).`
+
+If the echoed version doesn't match the installed plugin version, the installed marketplace copy is stale — see Troubleshooting.
 
 ## Prerequisites
 
 ### Required
 
-1. **V23 plugin version ≥ 3.4.0** in Claude Code. Run your plugin-update flow if you're on an older version. The skill won't appear until updated.
-
-2. **Deal folder must be SharePoint-synced locally.** Path typically:
-   `C:\Users\<you>\Vanadium Group LLC\V23 - Database\1- Realty\1- Deals\<Deal Folder>`
-   Online-only folders won't work — the skill needs to enumerate files locally.
-
-3. **Source files in the deal folder.** At minimum:
-   - Underwriting dashboard PDF (returns, cap stack, NOI trajectory)
-   - Underwriting model xlsx
-   - Investment summary PDF (narrative voice)
-   
-   Quality improves with:
-   - Asset photos
-   - Floor plans / renderings
-   - Comp lease/sale documents
-   - Sponsor track record materials
-   - Market articles for context
-
-4. **Microsoft 365 MCP connector** enabled in your Claude Code session. The skill uses `sharepoint_search` and `sharepoint_folder_search` to look up Graph driveItem URIs. If MCP isn't available, the skill surfaces unresolved files for manual lookup rather than fabricating URIs.
-
-5. **Claude in PowerPoint** open in the PowerPoint app where you'll build the deck.
+1. **V23 plugin ≥ 6.0.0** in Claude Code. Earlier versions run the retired CIP-prompt flow.
+2. **Deal folder synced locally** (typically `C:\Users\<you>\Vanadium Group LLC\V23 - Database\1- Realty\1- Deals\<Deal Folder>`). CC reads every source file directly — online-only folders won't work.
+3. **Source files in the deal folder.** At minimum the sizing/underwriting model (the Investment Summary tab is canonical for deal numerics). Quality improves with: sponsor OM / exec summary / decks, appraisals, prior V23 work product, photos and renderings. Revision mode additionally requires the live `.pptx`.
+4. **Python 3 with `python-pptx`** — used by `build-deck.py`, `apply-revision-edits.py`, and `make-template.py`. (`extract-pptx-inventory.py` and `render-qa.py` are stdlib-only.)
+5. **A render path for Phase 5a visual QA:** `pdftoppm` (poppler) on PATH is required; pptx→PDF conversion uses LibreOffice (`soffice`) if on PATH, else desktop PowerPoint via COM. Fallback: export the PDF manually from PowerPoint and pass the `.pdf` to `render-qa.py` directly.
 
 ### Optional
 
-6. **`/adobe-for-creativity/adobe-design-from-template`** skill installed in Claude in PowerPoint — only needed if you upload a custom template. If you take the default Vanadium route, this isn't required.
+6. **Claude in PowerPoint** — only for optional post-QA polish or Path-B revision edits. Not needed for a standard build.
+7. **Microsoft 365 MCP** — only if CIP punch-list items reference SharePoint/Graph image URIs. The core pipeline reads files from the local synced folder and does not use Graph.
 
-7. **A template .pptx file** — only if you choose the upload path.
+## Working folder convention
 
-## How it works (step-by-step)
+All pipeline artifacts live in `<deal-folder>\x V23\` (created if absent). Before any existing artifact is overwritten, the prior version moves to `<deal-folder>\x V23\Archive\`.
 
-### In Claude Code (the om-builder skill)
+## The pipeline at a glance
 
-1. **Resolve deal folder.** Identifies the folder you mean; asks if ambiguous.
-2. **List source files.** Filters to PDF, xlsx, docx, pptx, html, images.
-3. **Look up Graph URIs.** Queries Microsoft Graph via 365 MCP per file. Composes URIs as `file:///<driveId>/<itemId>`. Known V23 driveIds (Realty + Teams Chat Files) are baked in.
-4. **Pull asset brief.** Reads the dashboard or investment summary for a 1-2 sentence asset description (SF, location, sponsor, ask).
-5. **Assemble pasteable prompt.** Fills `prompt-template.md` placeholders, inserts `layout-repertoire.md` at `{{LAYOUT_REPERTOIRE}}`, prints with copy markers.
+Before Phase 0, the skill runs **mode detection**: it globs the deal folder for `.pptx` files. Zero found → new-build. One or more → revision mode targeting the file the user confirms as live. It never switches modes silently mid-run, and states the detected mode (and target file) before starting.
 
-### In Claude in PowerPoint (after you paste)
+| Phase | Name | Key artifact(s) in `x V23\` | Gate |
+|---|---|---|---|
+| 0 | Frame | `00-FRAME.md` | User confirms before anything is read deeply |
+| 1 | Extract & Audit | `_data_extract\NN-<source>.md` digests, `00-DATA-AUDIT-TRAIL.md`, `Data needed from <sponsor> - <date>.md` | User reviews audit trail + data request doc |
+| 2 | Research | findings merged into the audit trail | none |
+| 3 | Blueprint | `OM Build Blueprint - <date>.md` | **HARD GATE — user (+Henry) sign-off; nothing is built before this clears** |
+| 4 | Build (CC-native) | `<deal>-vN.pptx` + build log | none |
+| 5 | QA | rendered slide PNGs, `QA Report - <date>.md` | User reviews deck + QA report |
+| 6 | Ship | PDF, `Open Items - <date>.md` | none |
 
-6. **Step 0 — File access verification.** Opens every file via Graph URIs and reports one concrete detail per file proving it actually read it.
-7. **Step 2 — Template decision (BLOCKING).** Asks: "Upload a template or default to Vanadium style?" Waits for your answer.
-8. **Step 4 — Design system setup** (if default chosen). Applies Vanadium master: Garamond + Aptos fonts, navy + pale-blue palette with exact hex codes, 60pt margin grid, footer bar.
-9. **Cover + Executive Summary.** Drafts, pauses for sign-off.
-10. **Section depth plan.** Proposes layout (from the 12-layout repertoire) per section with flex slide counts. Pauses for sign-off.
-11. **Section-by-section build.** Builds each section, pauses for review.
-12. **QA pass.** Runs 30-item checklist before declaring done.
+### Phase 0 — Frame
 
-## What the pasteable prompt contains
+One page capturing: capital type (equity/debt/pref/JV), deck type (single-asset / portfolio / platform — with the WHY, since deck type drives the exec-summary recipe, stat-box vocabulary, and coverage checklist), audience, page budget (ceiling + target), and stop-list seeds. **Stop-list mechanics:** every user directive is parsed into three columns — Add-list / Modify-list / Stop-list — and every output block is re-checked against all three before shipping. Meta-directives are pattern-matched (e.g., "don't be too specific about what's under contract" means strip dated status language deck-wide, not just one phrase).
 
-10 steps, ~4,900 words total:
+### Phase 1 — Extract & Audit
 
-| Step | Purpose |
+CC opens and reads every canonical source directly (never subagent-summarized): the model (Investment Summary tab canonical; Pro Forma / Rent Roll / Waterfall / Comps tabs for detail), sponsor OM and decks, appraisals (third-party support, never the canonical deal numeric), prior V23 work product, and — in revision mode — the live `.pptx` via inventory extraction.
+
+Every claim lands in `00-DATA-AUDIT-TRAIL.md`: claim, value, source file/tab/page, as-of date, tier, and status (✅ verified / ⚠️ conflicted / ❌ unverifiable / 🔢 sponsor-canonical). **Conflict policy:** the underwriting model is canonical for deal numerics; when sources disagree, the most recent wins, the conflict is flagged ⚠️, and it routes to the data request doc — never silently averaged or fudged. A **self-consistency sweep** then hunts contradictions within and across sources (headline returns not derivable from TPC + NOI, capital stacks that don't sum, status labels contradicted by dates). Every ⚠️/❌ becomes a numbered question in `Data needed from <sponsor> - <date>.md`.
+
+### Phase 2 — Research
+
+3–5 parallel subagents, each scoped to ONE specific question naming the exact submarket, metric, as-of period, and preferred source tier ("Brunswick, GA multifamily vacancy and asking rents for workforce units, as of Q1 2026, from CoStar or Newmark" — not "submarket fundamentals"). Each returns quoted passage + source + as-of date + tier + confidence, merged into the audit trail per `source-standards.md`.
+
+### Phase 3 — Blueprint (the hard gate)
+
+The blueprint is where all composition decisions happen, on paper: a one-sentence thesis the whole deck argues; 3–5 load-bearing claims each traced to an audit-trail ID; register/deck-type cross-check against the `registers-and-coverage.md` coverage checklist; a slide-by-slide spec (eyebrow / action title / layout key / content blocks / audit-trail IDs — action titles are assertive sentences, not topic labels); page-budget enforcement (cuts happen here, not after slides are built); risk-register placement decision; and in revision mode, PRESERVE and NEVER-REINTRODUCE lists. No content block ships to build without an audit-trail ID. **Nothing is built before the user (+Henry) signs off.**
+
+### Phase 4 — Build (CC-native)
+
+The template is never modified — work happens on a copy at `x V23\<deal>-vN.pptx`. The blueprint slide spec is serialized as JSON and run through `python build-deck.py spec.json`. For arrangements python-pptx can't express cleanly, the escape hatch is direct XML layout-cloning from the template (clone and modify; never invent new masters). Every authored sentence is governed by `voice-model.md` (GP rules outrank everything) + `anti-ai-ruleset.md` (read-aloud pass); layout selection by `layout-system.md` (structural-first); number formatting, typography, and footers by `design-system.md` + `conventions.md`. A build log records every slide's layout key and any XML escapes taken.
+
+### Phase 5 — QA (three sub-gates, in order)
+
+- **5a Visual:** `render-qa.py` renders every slide to PNG; a subagent inspection loop checks overflow, overlap, contrast, misalignment, off-canvas elements, font-default leak (Aptos/Calibri bleedthrough), and broken tables. Fix → re-render → loop until clean.
+- **5b Verification:** every deck numeric is re-checked against the audit trail. Criticals (ask size, key returns, cap stack) re-check directly to the source file/tab/page; research claims re-fetch the cited URL. Any figure without a ✅ entry is replaced with "TBD — confirm with sponsor" before shipping.
+- **5c Editorial** (codified from Henry's 2026-06-09 NPV review): cross-page numeric consistency on 5–10 key figures; unit style per the `conventions.md` Three-Context Rule ($mm in prose, $MM in stat boxes, spelled out on covers); dash/decimal conventions; thesis-contradiction sweep; placeholder sweep; label/bio parallelism; read-aloud anti-AI pass.
+
+Results land in `QA Report - <date>.md` with pass/fail per item.
+
+### Phase 6 — Ship
+
+Export the PDF with the "Vanadium Realty LLC | <Deal Name>" footer on every page; name it `<Deal> - OM - <YYYY-MM-DD>.pdf` per `conventions.md`; archive prior versions; write `Open Items - <date>.md` listing every unresolved ⚠️/❌ item and TBD placeholder; report final paths.
+
+## Revision mode
+
+1. **Inventory first (mandatory):** `python extract-pptx-inventory.py <canonical.pptx>` writes `inventory.txt` and `inventory-fulltext.txt` into `<filename>-extracted\`. The live `.pptx` is the source of truth — earlier PDF exports are stale by definition. Every edit must reference a real shape ID with current text quoted as a precondition.
+2. **Stop-list capture** (Phase 0 mechanics, mandatory here): PRESERVE and NEVER-REINTRODUCE lists go into the blueprint.
+3. **Path A — deterministic edits (default):** author a JSON edit spec for `apply-revision-edits.py` (ops: `set_text`, `set_rich_text`, `set_cell`, `set_chart_series`, `delete_slide`; each op carries slide number, shape_id, an `expect` precondition, and the new content verbatim). The engine copies source → target (never edits the original), verifies each precondition, preserves run formatting, and prints PASS/SKIP/ERROR per op. SKIPs are surfaced, never silently ignored. Re-run the inventory afterward to confirm edits landed and stop-list phrases are gone.
+4. **Path B — CIP edit script (visual/judgment edits only):** for repositioning shapes visually, image/logo placement, or anything requiring visual judgment CC can't make from XML. The shape-level script is saved to `x V23\CIP-Edit-Script.md` and referenced by path, not pasted into the conversation.
+5. **Render-QA loop** after either path, plus the Phase 5c editorial checks.
+
+## Optional CIP polish (post-Phase-5 only)
+
+Off the critical path, invoked only after the deck passes QA. CIP executes a bounded shape-level punch-list per `cip-polish-template.md` — typically swapping photo placeholders for real images, placing logos, annotating aerials. Every item carries a precondition and a skip rule; CIP does not author, recompose, rewrite prose, or re-derive numbers. Key operational caveats from the template: embed Garamond and Bell MT in the `.pptx` before CIP touches it (unembedded fonts silently substitute to Calibri off-Windows); check z-order after image insertion; escape `&` as `&amp;` in any XML; re-list shapes after structural edits; batch actions per item.
+
+## Reference docs and scripts
+
+All live in `<plugin>/skills/om-builder/`.
+
+| File | Governs |
 |---|---|
-| 0 | File access and verification |
-| 1 | Mission + three governing rules (slide count not a target, layout not fixed, no fabrication) |
-| 2 | Template decision (blocking question) |
-| 3 | Source priority (dashboard wins on numbers) |
-| 4 | Vanadium house design system |
-| 5 | Layout repertoire (12 layouts with when/structure/why/DO/DON'T) |
-| 6 | OM section spine (29 canonical sections, content-driven count) |
-| 7 | Voice and copy principles |
-| 8 | Anti-AI guardrails |
-| 9 | Process (build sequence with checkpoints) |
-| 10 | QA checklist (30 items) |
+| `voice-model.md` | Writing voice: 5 generation-priority (GP) rules that outrank everything (every claim block carries a computed downside anchor; underwrite below the validated comp and show both numbers; odd-precision anchored numbers; withhold/leave asymmetry; a defensive numeric in every block) plus 11 corpus-validated voice rules |
+| `anti-ai-ruleset.md` | Final-pass anti-AI-tell checklist run over every authored block (kill negation antithesis, number/name/date in every claim, banned-vocabulary purge, read-aloud pass) |
+| `layout-system.md` | Arrangement catalog + structural-first selection: the canonical sequence → arrangement mapping decides layouts for canonical slide positions; intent-based selection is a tiebreak for non-canonical slides only. Supersedes the old `layout-repertoire.md` |
+| `design-system.md` | Visual DNA: 12 durable elements with exact values (navy #1F3A5F header band, Garamond type ramp, off-canvas accent-bar stack, logo positions). Supersedes the style block formerly hardcoded in `prompt-template.md` |
+| `registers-and-coverage.md` | 10-register taxonomy with structural spines, required-metric coverage checklists per capital type, and risk-register placement rules |
+| `conventions.md` | Numbers, units, citations, naming: Three-Context Rule for dollar amounts, two-decimal rule for model-derived returns, lowercase-x multiples, whole-number bps, parentheses negatives, file naming |
+| `source-standards.md` | Source tiers (1–3), as-of dating discipline, audit-trail format, never-fabricate policy |
+| `cip-polish-template.md` | Optional post-QA CIP punch-list template with per-item format and Office.js caveats |
+
+| Script | Role |
+|---|---|
+| `scripts/build-deck.py` | Phase 4 new-build generator: JSON slide spec → `.pptx` cloned from `assets/v23-template.pptx`. Deterministic layouts: cover, kpi_strip, narrative, table, chart, two_column, section_divider (~80% of an OM). Any other layout value becomes a labeled placeholder slide for CIP/manual finish |
+| `scripts/render-qa.py` | Phase 5a renderer: deck → PDF → per-slide PNGs (usage: `python render-qa.py <deck> <outdir>`; accepts a `.pdf` directly to skip conversion) |
+| `scripts/extract-pptx-inventory.py` | Revision-mode inventory: slide/shape/position/text preview, plus run-level formatting, table cell grids, and chart series in the fulltext variant |
+| `scripts/apply-revision-edits.py` | Path-A revision engine: precondition-checked JSON edit ops with PASS/SKIP/ERROR reporting |
+| `scripts/make-template.py` | Regenerates `assets/v23-template.pptx` when the design system changes |
 
 ## Known caveats and limitations
 
-### MCP and file access
-
-- **MCP availability is per-session.** If the 365 MCP isn't loaded in your Claude Code session, Graph URI lookup fails. The skill surfaces unresolved files rather than fabricating URIs. Workaround: look them up manually in SharePoint or re-run from a session with MCP enabled.
-- **SharePoint sync must be current.** Files added but not yet synced down won't appear.
-- **Two known V23 drives** are baked in (main Realty + Teams Chat Files). If a deal uses a third drive (e.g., a sponsor's own SharePoint), the skill needs to be updated to know it.
-- **Refusal preamble doesn't always defeat Claude in PowerPoint refusals.** The pasteable prompt's Step 0 includes language telling Claude in PowerPoint not to refuse on "can't access local files" before checking 365 MCP. If it still refuses, the MCP isn't loaded in PowerPoint either — you can either enable it or ask Claude in PowerPoint to open files one at a time as you reference them.
-
-### Source files
-
-- **Excel parsing is limited in Claude in PowerPoint.** Office.js can't fully parse complex xlsx OOXML. For dense rent rolls and line-item models, Claude in PowerPoint may need to default to "TBD — confirm with sponsor" rather than extract everything. This is by design — better to flag than fabricate.
-- **Image-only PDFs have no extractable text.** Renderings and floor plans get inserted as visuals; Claude in PowerPoint can't read text inside them.
-- **Stale source files = stale OM.** The skill doesn't validate file recency. If the dashboard is 2 months old and the deal has moved, the OM reflects the old numbers. Refresh the dashboard before running.
-
-### Style and content
-
-- **Canonical style is locked to 105 N 13th OM (April 2026).** Future Vanadium OMs may evolve the house style. To update, edit `prompt-template.md` and `layout-repertoire.md` in `<plugin>/skills/om-builder/` and bump the plugin version.
-- **Vanadium hex codes are inferred from 105 N 13th, not from an official brand style guide.** They match the production reference. If Vanadium has an official palette with different exact values, edit `prompt-template.md`.
-- **Font fallback risk.** Garamond and Aptos are specified. Aptos is the Microsoft 365 default (replaced Calibri in 2024) so it should be present. Garamond may not be installed on every system; PowerPoint will substitute (often with Times New Roman or a similar serif). If you need a specific Garamond variant (EB Garamond, Adobe Garamond Pro, etc.), edit the template.
-- **Footer attribution is hardcoded to "Vanadium Realty | [Deal Name]".** If V23's role on a deal is different (acquisition principal, advisor, co-broker) or the OM is co-branded, edit `prompt-template.md`.
-- **Section spine includes sections that don't apply to every deal.** Specifically:
-  - Section 11 (Submarket Residential Overview) — only relevant if the deal has a multifamily rezoning/conversion angle
-  - Section 24 (Mixed-Use / Land comps) — only relevant for upside-thesis-supporting comps
-  - Section 16 (Submarket Residential Overview) and Section 24 (Mixed-Use comps) should be skipped for pure office/industrial deals with no optionality
-- **Photo-grid layout assumes you have photos.** If the deal folder has no usable photos, the Asset Overview — Photos slide should be skipped (Claude in PowerPoint should propose this in the section depth plan).
-
-### Process
-
-- **Pasteable prompt is ~4,900 words.** Most Claude in PowerPoint contexts handle this, but if context compresses mid-build, you may need to re-paste in chunks (one section at a time).
-- **First-run feedback expected.** The skill encodes 105 N 13th lessons; every deal differs. Flag anomalies on your first real run and refine the prompt template.
-- **No deal-specific numerics in the prompt itself** (intentional). Numbers come from source files at deck-build time so they stay in sync. Don't paste extracted financials into the prompt — Claude in PowerPoint will extract them itself.
-- **The skill doesn't run TDD compliance tests on its own output.** A first-run anomaly is your signal to refine, not evidence the skill is broken.
+- **`build-deck.py` covers the deterministic ~80%.** Full-bleed photo heroes, annotated aerials, maps, renderings, image placement, stacking plans, and scatter/quadrant exhibits are not generated — they ship as labeled placeholder slides routed to CIP polish or manual finish. A deck with many bespoke visuals will have a longer punch-list.
+- **Phase 5a needs a local render path.** No poppler = no PNGs; no LibreOffice/PowerPoint = manual PDF export fallback. Visual QA is mandatory, so install the tooling once.
+- **The model is canonical; everything else is support.** Appraisal values are quoted as third-party support, and marketing-deck figures are distrusted until verified. Date is the tiebreaker on conflicts. If the model is stale, refresh it before running — the pipeline dates everything but can't generate numbers the model doesn't have.
+- **Never-fabricate is enforced, by design.** Unverifiable figures ship as "TBD — confirm with sponsor" and appear in the open-items doc rather than being guessed. Expect TBDs when source material is thin.
+- **Revision mode trusts only the live `.pptx`.** PDF exports of the deck are stale by definition; every edit requires a shape-ID precondition from a fresh inventory.
+- **Stop-lists are sticky.** Phrases killed by a stop-list go on the NEVER-REINTRODUCE list and are re-checked at QA — but only if they were captured at Phase 0/revision intake. State "don't/never/remove/kill" directives explicitly.
+- **Font embedding matters only when CIP touches the file.** Embed Garamond and Bell MT before any CIP polish session, or fonts may silently substitute on non-Windows machines.
+- **The version echo is the staleness tripwire.** If the echoed version doesn't match the installed plugin version, stop and update before building.
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Skill doesn't appear in Claude Code's available skills | Plugin not updated to 3.4.0 | Run plugin update; restart Claude Code |
-| "Could not resolve Graph URI" warning | 365 MCP not loaded in session, or file not yet synced | Look up URIs manually in SharePoint; or re-run in a session with MCP enabled; or trigger sync |
-| Claude in PowerPoint says "I can't access local files" | The refusal preamble didn't override the default refusal | Tell Claude in PowerPoint explicitly: "Use the 365 MCP connector and try again." If it still refuses, MCP isn't loaded in PowerPoint either |
-| Claude in PowerPoint reads PDFs fine but can't fully parse the xlsx | Office.js OOXML parsing limit on complex sheets | Accept "TBD — confirm with sponsor" placeholders; supplement manually after the deck is built |
-| Deck comes out with rounded cards, icons, or gradients (AI tells) | Anti-AI guardrails not applied | Re-paste the prompt emphasizing Step 8; or post-process with the dedicated rework prompt (separate output, not this skill) |
-| Footer shows wrong attribution | Hardcoded to "Vanadium Realty | ..." | Edit `prompt-template.md` line in the master slide spec; bump plugin version |
-| Garamond didn't render — body looks like Times New Roman | Garamond not installed on the system | Install Garamond, or edit `prompt-template.md` to specify a substitute (EB Garamond, etc.) |
-| Section count exploded — Claude in PowerPoint made 50+ slides | Section depth plan wasn't reviewed/approved before building | After the cover + exec summary, force a pause; demand the depth plan with one-sentence rationale per section; sign off explicitly before building further |
-| Numbers don't match across slides | Cross-slide consistency check not run in QA | Ask Claude in PowerPoint to cross-check 5-10 key figures (PP, equity, debt, IRR, EM, NOI Yr1/Yr5, exit, cap rate) and fix any mismatches |
+| Skill doesn't appear, or version echo doesn't match the installed plugin | Installed marketplace copy is stale | `git pull` in `~\.claude\plugins\marketplaces\v23-plugins`; restart Claude Code |
+| `ModuleNotFoundError: No module named 'pptx'` | `python-pptx` not installed | `pip install python-pptx` |
+| `render-qa.py`: "pdftoppm not on PATH" | poppler missing | Install poppler and add it to PATH |
+| `render-qa.py`: PDF conversion failed | No `soffice`; PowerPoint COM failed | Open the deck in PowerPoint, Save As PDF, re-run `render-qa.py` with the `.pdf` as the first argument |
+| Rendered slides show Aptos/Calibri instead of Garamond | Font-default leak (a Phase 5a check) | Fix the slide spec or cloned XML; re-render the affected slide |
+| `apply-revision-edits.py` prints SKIP on an op | `expect` precondition mismatch — the deck changed since the inventory | Re-run `extract-pptx-inventory.py`, update the op's expect text, re-run |
+| Numbers differ across slides | Phase 5c cross-page consistency check failed or skipped | Verify 5–10 key figures against the audit trail; fix every instance |
+| A figure has no audit-trail entry at 5b | Claim never extracted/verified in Phase 1–2 | Replace with "TBD — confirm with sponsor"; add to the data request doc |
+| Deck exceeds the page budget | Cuts weren't made in the blueprint | Return to Phase 3, merge/cut on paper, re-gate, rebuild affected slides |
+| CIP improvised or edited the wrong shape during polish | Punch-list item lacked a precondition or skip rule | Use the `cip-polish-template.md` item format; re-deliver the full block (CIP has no cross-turn memory) |
+| Prose sounds AI-generated | Voice rules not applied at build | Run the `anti-ai-ruleset.md` read-aloud pass; rewrite per `voice-model.md` GP rules |
 
 ## Updating or extending the skill
 
-Files live at:
-`C:\Users\TheodoreMouhlas\.claude\plugins\marketplaces\v23-plugins\plugins\v23\skills\om-builder\`
-(and `om-builder-help/` for this guide)
+Development copy: `C:\Users\TheodoreMouhlas\Workspace\Vanadium\x Plugins\v23-plugins\plugins\v23\skills\om-builder\` (and `om-builder-help\` for this guide). Installed copy: `C:\Users\TheodoreMouhlas\.claude\plugins\marketplaces\v23-plugins\...` — edit the dev repo, never the installed copy directly.
 
-To change behavior:
+What to edit:
 
-1. **Design system** (fonts, colors, margins, section spine, voice) → edit `prompt-template.md`
-2. **Layouts** (new layouts, refined existing) → edit `layout-repertoire.md`
-3. **Skill orchestration** (file lookup logic, runbook steps) → edit `SKILL.md`
-4. **Help content** (this document) → edit `om-builder-help/SKILL.md`
-5. **Bump version** in both `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`:
-   - Patch (3.4.0 → 3.4.1) for refinements, fixes, language tweaks
-   - Minor (3.4.0 → 3.5.0) for new layouts, new sections, new behavior
-   - Major (3.x → 4.0.0) for breaking changes (renames, removed sections)
-6. **Commit and push** to the plugin git repo so clients pick up the change.
+1. **Runbook / phase logic** → `om-builder/SKILL.md`
+2. **Voice rules** → `voice-model.md`; **anti-AI backstop** → `anti-ai-ruleset.md`
+3. **Layouts** → `layout-system.md`; **visual DNA** → `design-system.md` (then regenerate the template via `make-template.py` if values changed)
+4. **Registers / coverage checklists** → `registers-and-coverage.md`
+5. **Number/unit/naming conventions** → `conventions.md`; **source rules** → `source-standards.md`
+6. **Build/revision behavior** → the scripts under `scripts/`
+7. **CIP polish format** → `cip-polish-template.md`
+8. **This guide** → `om-builder-help/SKILL.md`
+
+Then publish:
+
+1. **Bump the version in BOTH** `plugins/v23/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` — they must match. Patch for fixes/doc tweaks, minor for new behavior, major for breaking changes.
+2. **Frontmatter rules (hard requirement):** every SKILL.md keeps exactly two frontmatter keys — `name` (must equal the folder name) and `description`. Any other key, or a name/folder mismatch, silently fails validation and **blocks the entire plugin from updating on clients** with no surfaced error.
+3. **Commit and push** to the plugin repo, then `git pull` in the installed marketplace folder so the installed copy equals dev. Verify with the version echo on the next run.
 
 ## Related skills
 
-- **`v23:deal-pack`** — ingest raw DD materials into a clean canonical pack. Run before om-builder if the deal folder isn't already normalized (rent roll abstracted, photos captioned, T-12 mapped).
-- **`v23:deal-screener`** — screen an OM, model, or pitch deck with a senior CRE eye. Use after a draft is built to pressure-test.
-- **`v23:comp-search`** — pull sale/lease comps for the OM's comp slides. Useful alongside om-builder to populate Section 21-24.
-- **`v23:placement-engine`** — generate ranked investor placement lists. Use after the OM is finished.
-- **`/adobe-for-creativity/adobe-design-from-template`** — used by Claude in PowerPoint when you upload a template (not directly invocable from Claude Code).
+- **`v23:deal-pack`** — normalize raw DD materials into a canonical pack first if the deal folder is a mess.
+- **`v23:deal-screener`** — pressure-test the draft OM with a senior CRE eye after Phase 5.
+- **`v23:comp-search`** — pull sale/lease comps to feed the comp slides and the audit trail.
+- **`v23:placement-engine`** — generate the investor placement list once the OM ships.
 
 ## When NOT to use the om-builder
 
-- **Re-styling an existing deck** → different prompt (separate skill or one-off prompt, not this one)
-- **One-pagers or teasers** → different artifact; `v23:deal-screener` is closer
-- **Direct deck construction in Claude Code** → Claude in PowerPoint does the live work; om-builder builds the prompt that drives it
-- **Non-OM artifacts** (IC memos, broker pitches, LP updates) → different document type; ask for a different prompt
+- **Non-OM artifacts** (IC memos, broker pitches, LP updates, teasers/one-pagers) → different document type; `v23:deal-screener` output or a one-off is closer.
+- **Pure data extraction or folder cleanup** → `v23:deal-pack`.
+- **Changing the house style itself** → edit `design-system.md` / `make-template.py` and bump the plugin version; don't fight the pipeline deal-by-deal.
 
 ## The bottom line
 
-The om-builder is the **prompt-generation layer** between V23's source files and Claude in PowerPoint's live deck build. It encodes the Vanadium house style + the layout repertoire + the anti-AI guardrails + the process discipline that was hard-won over multiple OM productions.
+The om-builder v6 is a **gated artifact pipeline that owns the OM end-to-end in Claude Code**: frame → extract & audit → research → blueprint (hard gate) → CC-native build → three-stage QA → ship. Every number traces to an audit-trail entry; every sentence passes the voice and anti-AI rules; every layout comes from the codified system. CIP is a bounded finishing tool, not the builder.
 
-It does not build the deck. Claude in PowerPoint does.
-
-If something feels off on the first real run, the answer is to refine `prompt-template.md` or `layout-repertoire.md` and bump the plugin version — not to abandon the skill. The skill exists to compound lessons across deals.
+If something feels off on a real run, the answer is to refine the relevant artifact doc or script and bump the plugin version — not to abandon the pipeline. The skill exists to compound lessons across deals.
