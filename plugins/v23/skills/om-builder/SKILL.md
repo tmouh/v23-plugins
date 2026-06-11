@@ -1,12 +1,12 @@
 ---
 name: om-builder
-description: "Build or revise a Vanadium-grade CRE Offering Memorandum using a gated artifact pipeline. Claude Code authors the .pptx directly via build-deck.py seeded from v23-template.pptx; CIP is optional post-QA polish only. Triggers: build/create/generate an OM, refresh/revise an existing OM, deal folders under \\1- Realty\\1- Deals\\. Asset-class agnostic. All capital types: equity, debt, pref, JV. Pipeline: Phase 0 Frame → Phase 1 Extract & Audit → Phase 2 Research → Phase 3 Blueprint → Phase 4 CC-native pptx build → Phase 5 QA (visual + verification + editorial) → Phase 6 Ship. Human gates after Phases 0, 1, 3, and 5."
+description: "Build or revise a Vanadium-grade CRE Offering Memorandum using a gated artifact pipeline. Claude Code authors the .pptx directly — default method: clone-build.py XML surgery on a register-matched production seed deck; build-deck.py generator is the no-seed fallback; CIP is optional post-QA polish only. Triggers: build/create/generate an OM, refresh/revise an existing OM, deal folders under \\1- Realty\\1- Deals\\. Asset-class agnostic. All capital types: equity, debt, pref, JV. Pipeline: Phase 0 Frame → Phase 1 Extract & Audit → Phase 2 Research → Phase 3 Blueprint → Phase 4 CC-native pptx build → Phase 5 QA (visual + verification + editorial) → Phase 6 Ship. Human gates after Phases 0, 1, 3, and 5."
 ---
 
-# om-builder v6.0.0
+# om-builder v6.1.0
 
 **Version echo — print this line at the start of every run:**
-`om-builder v6.0.0 — if this does not match the installed plugin version, your install is stale (see om-builder-help).`
+`om-builder v6.1.0 — if this does not match the installed plugin version, your install is stale (see om-builder-help).`
 
 ---
 
@@ -41,7 +41,7 @@ Capture:
 - **Page budget:** stated ceiling (e.g., ≤25 pages) and target (e.g., 20–23)
 - **Stop-list seeds:** any explicit "don't / never / remove / kill" directives the user has provided; extract add-list and modify-list as well; flag hidden meta-directives (see v5.1 stop-list mechanic below)
 - **Mode:** new-build or revision, as detected above
-- **Version echo line** (repeat in this artifact): `om-builder v6.0.0`
+- **Version echo line** (repeat in this artifact): `om-builder v6.1.0`
 
 **Stop-list mechanics (port from v5.1):** Read every user directive line by line. Extract three columns: Add-list / Modify-list / Stop-list. Every output block and every slide must be re-checked against all three before shipping. Pattern-match: "don't be too specific about what's under contract" is a meta-directive to strip dated status language across the whole deck, not just one phrase.
 
@@ -136,21 +136,31 @@ Blueprint contents:
 
 ---
 
-## Phase 4 — Build (CC-native)
+## Phase 4 — Build (CC-native, clone-first)
 
 No gate after this phase.
 
+**DEFAULT METHOD: seed-deck XML clone** (v6.1). Clone real slides from a register-matched production deck and edit content surgically at the XML run/cell level — the house method per `layout-system.md` §4B. Structure, run formatting, banded tables, and tile constructions are inherited, never drawn from primitives. (Why this is the default: `assets\v23-template.pptx` carries ZERO slides — it is a master/theme shell — so the python generator draws every shape from scratch, one thin element per slide. The generator-first v6.0 path shipped a rejected sparse deck on its first live run, 2026-06-11; the clone rebuild passed full QA the same day.)
+
 **Steps:**
-1. Seed `assets\v23-template.pptx` — do not modify the original; work on a copy at `x V23\<deal>-v1.pptx` (new-build) or `x V23\<deal>-vN.pptx` (revision).
-2. Serialize the blueprint slide spec as the JSON input to `scripts\build-deck.py`. Run:
+1. **Select the seed deck — register-matched, per `registers-and-coverage.md` §1.** The seed must share the blueprint's register so its slide vocabulary (exec-summary tables, metric labels, section spine) transfers with minimal surgery:
+   - Debt OM (R2) → `105_N_13 - OM - 2026-03-02 - vDebt.pptx` (only corpus deck with the verified Debt Returns exec panel)
+   - Equity full OM (R1) → `105_N_13 - OM - 2026-04-22.pptx` (terminal B-chain; all 12 design-DNA elements)
+   - Platform / programmatic (R7-style) → `NPV-Florida-IOS - OM - 2026-06-09.pptx` (A-04 block grid, A-15 tiles, KPI strips)
+   - A newer shipped OM of the same register supersedes these examples — prefer the freshest send-state deck of the matching register.
+   Freeze a copy at `x V23\_build\seeds\` (never operate on a live production deck) and run `extract-pptx-inventory.py` on the frozen copy. Every edit references a real shape ID from this inventory with current text quoted as a precondition.
+2. **Map blueprint slides → seed slides** (the slide plan): each blueprint slide is a kept original or a clone of the seed slide with the matching arrangement key (`layout-system.md` §2). Reuses of a seed slide are clones. Bespoke arrangements with no seed instance (e.g., A-15 tiles in a B-chain seed) are rebuilt from cloned textboxes positioned per the layout-system zone geometry.
+3. **Author the buildspec and run the engine.** Content (in voice, audit-trail IDs in comments) + per-slide edit functions go in a deal-local buildspec consumed by `scripts\clone-build.py`:
    ```
-   python "<skill-dir>/scripts/build-deck.py" spec.json
+   python "<skill-dir>/scripts/clone-build.py" "x V23\_build\buildspec.py"
    ```
-3. For arrangements that python-pptx cannot express cleanly, use the direct XML layout-cloning escape hatch: clone the slide XML from the template, edit content in-place. Do not invent new masters; clone existing slides and modify.
-4. **Voice:** every authored sentence governed by `voice-model.md` (GP rules §1 outrank all other rules) + `anti-ai-ruleset.md` (run the read-aloud pass over every authored text block before including it in the spec).
-5. **Layout:** selection governed by `layout-system.md` (structural-first: canonical sequence → arrangement mapping overrides intent-based selection for canonical slide positions).
-6. **Visual and numeric style:** `design-system.md` + `conventions.md` govern all number formatting, typography, footer conventions, and stat-box vocabulary.
-7. **Build log:** record every slide — layout key used, notable decisions, any XML-clone escapes taken.
+   The engine handles: unpack → keep/clone/delete/reorder slides → precondition-checked text replacement (seed rPr inherited) → table rebuilds from row templates → image part swaps with center-crop → **orphan-part prune** (the seed's unused media is another deal's content and MUST NOT ship inside the package) → repack. Deterministic and re-runnable; a revision is a content edit + rerun.
+4. **Trap list** — each was hit on the first production run; `clone-build.py` handles them, listed so nobody rediscovers them: inherited underline/strike on seed lead-runs (strip); seed buChar bullets where A-06/A-13 demand typographic-only (`bullets=False`); resized tables need tblGrid + frame extent recomputed together and explicit row heights; graphicFrames use `p:xfrm` not `a:xfrm`; pics use `p:blipFill` not `a:blipFill`; shapes hide inside `p:grpSp` groups (search recursively); added media needs a `[Content_Types]` Default or PowerPoint refuses the file; contact-card emails carry hyperlink rPr (rebuild kills the underline); OneDrive marks unpacked files read-only (rmtree needs an onerror chmod handler).
+5. **Fallback — generator** (`scripts\build-deck.py`, blueprint slide-spec JSON): only when no register-matched seed exists (a genuinely new register or a one-off slide type with no seed instance anywhere in the corpus). Expect structurally sparse output that needs heavy Phase 5a work; never ship a generator pass as the deck without that work.
+6. **Voice:** every authored sentence governed by `voice-model.md` (GP rules §1 outrank all other rules) + `anti-ai-ruleset.md` (run the read-aloud pass over every authored text block before it enters the buildspec).
+7. **Layout:** selection governed by `layout-system.md` (structural-first: canonical sequence → arrangement mapping overrides intent-based selection for canonical slide positions).
+8. **Visual and numeric style:** `design-system.md` + `conventions.md` govern all number formatting, typography, footer conventions, and stat-box vocabulary.
+9. **Build log:** record every slide — seed source slide + orig/clone, arrangement key, edits applied, image swaps, precondition results, prune count, any deviations from the blueprint.
 
 ---
 
@@ -165,6 +175,14 @@ Run `scripts\render-qa.py` to render every slide to PNG. Then run a subagent ins
 ### 5b — Verification QA
 
 Re-check every deck numeric against `00-DATA-AUDIT-TRAIL.md`. Every figure in a KPI box, table, chart, or prose block must have a ✅ verified entry in the ledger. For criticals (ask size, key return metrics, cap stack), re-check directly to the source file/tab/page. For research claims, re-fetch the cited URL and confirm the passage still reads as cited. Any figure without a ✅ entry gets replaced with `TBD — confirm with sponsor` before the deck ships.
+
+**Codify the re-check as a script** (v6.1): author a deal-local checks file and run
+
+```
+python "<skill-dir>/scripts/verify-deck.py" "<deck.pptx>" "x V23\_build\checks.py"
+```
+
+The checks file lists MUST-PRESENT rows `(label, regex, audit-trail ID)` built from every ledger figure the blueprint cites, and MUST-ABSENT rows built from the blueprint §8 stop-list PLUS the clone seed's deal identifiers (prior addresses, sponsor names, tenant names) so no seed remnant ships. Pass = every MUST hits ≥1 slide and every BAN hits zero; each remaining `TBD — confirm with sponsor` is listed for explicit confirmation. Keep the script output with the QA report — it is the 5b evidence. (First production run: 70/70 present, 0 violations.)
 
 ### 5c — Editorial QA (codified from Henry's 2026-06-09 NPV review)
 
@@ -260,10 +278,12 @@ Per `source-standards.md`:
 6. `registers-and-coverage.md` — register taxonomy and metric checklists
 7. `conventions.md` — numbers, units, citations, naming
 8. `source-standards.md` — source tiers, audit-trail format, risk-mitigant pattern
-9. `scripts\build-deck.py` — new-build generator
-10. `scripts\render-qa.py` — PNG renderer for Phase 5a
-11. `scripts\extract-pptx-inventory.py` — inventory extractor
-12. `scripts\apply-revision-edits.py` — revision engine (Path A)
-13. `scripts\make-template.py` + `assets\v23-template.pptx` — regenerate template if design system changes
-14. `cip-polish-template.md` — optional CIP polish punch-list
-15. Bump version in `.claude-plugin\plugin.json` AND `.claude-plugin\marketplace.json` together; republish so installed copy equals dev
+9. `scripts\clone-build.py` — Phase 4 DEFAULT build engine (seed-clone library + buildspec CLI; trap list in its docstring)
+10. `scripts\verify-deck.py` — Phase 5b verification harness (MUST/BAN checks file)
+11. `scripts\build-deck.py` — new-build generator (Phase 4 FALLBACK when no register-matched seed exists)
+12. `scripts\render-qa.py` — PNG renderer for Phase 5a
+13. `scripts\extract-pptx-inventory.py` — inventory extractor
+14. `scripts\apply-revision-edits.py` — revision engine (Path A)
+15. `scripts\make-template.py` + `assets\v23-template.pptx` — regenerate template if design system changes (note: the template is a master/theme shell with zero slides — that is WHY clone-build is the default)
+16. `cip-polish-template.md` — optional CIP polish punch-list
+17. Bump version in `.claude-plugin\plugin.json` AND `.claude-plugin\marketplace.json` together; republish so installed copy equals dev
