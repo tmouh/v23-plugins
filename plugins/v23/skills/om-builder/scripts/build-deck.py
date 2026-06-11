@@ -16,9 +16,10 @@ maps, renderings, image placement, stacking plans, scatter/quadrant exhibits.
 The generator marks any slide whose "layout" it doesn't implement as a labeled
 placeholder slide so the deck is complete and CIP knows exactly what to finish.
 
-House style + voice are NOT re-derived here — they live in prompt-template.md
-(Step 2 visual spec) and house-voice.md (writing voice). CC must have already
-written the content in-voice before calling this; the generator only places it.
+House style + voice are NOT re-derived here — they live in design-system.md /
+layout-system.md (visual) and voice-model.md + anti-ai-ruleset.md (writing voice).
+CC must have already written the content in-voice before calling this; the
+generator only places it.
 
 Content spec (JSON):
 {
