@@ -1,6 +1,6 @@
 {
   "name": "v23-plugins",
-  "description": "Vanadium Group (V23) tools - CRE OM building (gated artifact pipeline), comp search, LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
+  "description": "Vanadium Group (V23) tools - LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
   "owner": {
     "name": "Vanadium Group",
     "email": "tmouhlas@v23group.com"
@@ -8,8 +8,8 @@
   "plugins": [
     {
       "name": "v23",
-      "description": "Vanadium Group (V23) tools - CRE OM building (gated artifact pipeline), comp search, LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
-      "version": "6.1.0",
+      "description": "Vanadium Group (V23) tools - LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
+      "version": "7.0.0",
       "source": "./plugins/v23",
       "category": "productivity",
       "author": {
@@ -18,5 +18,5 @@
       }
     }
   ],
-  "version": "6.1.0"
+  "version": "7.0.0"
 }
