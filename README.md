@@ -4,10 +4,10 @@ Claude Cowork plugin marketplace for Vanadium Group internal tools.
 
 ## Skills
 
-### comp-search
-Search, filter, and export CRE sale and lease comparables from the V23 Database. Uses a 5-agent parallel architecture to search across zones simultaneously and export clean results to Excel.
+### deal-screener
+Screen CRE OMs, deal teasers, IC memos, underwriting models, or pitch decks with the eye of a senior CRE / capital-markets executive. Produces a structured screening report: forensic financial review, market check, sponsor read, risk register, ranked broker questions, and a pursue/pass/conditional verdict.
 
-**Trigger phrases:** "find comps", "pull comps", "hotel comps in Texas", "export Dallas multifamily sales", "what sold in [market]", "leasing activity in [area]", etc.
+**Trigger phrases:** "screen this", "what do you think of this deal", "review this OM", "kick the tires on this", etc.
 
 ### linkedin-research
 Vision-based LinkedIn bulk research agent. Takes screenshots of live browser pages and uses Claude's vision to extract whatever fields you ask for — no DOM scraping, no fragile selectors.
@@ -28,13 +28,13 @@ Generate ranked investor placement lists for commercial real estate capital rais
 
 ## Adding New Skills
 
-Create a new folder under `skills/`:
+Create a new folder under `plugins/v23/skills/`:
 
 ```
-skills/
-├── comp-search/          # CRE comparables search
+plugins/v23/skills/
+├── deal-screener/        # OM / deal screening
 │   ├── SKILL.md
-│   └── scripts/
+│   └── references/
 ├── linkedin-research/    # LinkedIn profile research
 │   ├── SKILL.md
 │   └── scripts/

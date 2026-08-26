@@ -1,7 +1,7 @@
 {
   "name": "v23",
-  "description": "Vanadium Group (V23) tools - LinkedIn research, capital placement, deal-pack normalization, and OM deal screening.",
-  "version": "7.0.0",
+  "description": "Vanadium Group (V23) tools - LinkedIn research, capital placement, and OM deal screening.",
+  "version": "8.0.0",
   "author": {
     "name": "Vanadium Group",
     "email": "tmouhlas@v23group.com"
